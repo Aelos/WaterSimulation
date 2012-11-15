@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type='text/xsl' href='_UpgradeReport_Files/UpgradeReport.xslt'?><UpgradeLog>
+<Properties><Property Name="Solution" Value="01-CubeViewer">
+</Property><Property Name="Fichier solution" Value="C:\Users\Aelos\Documents\Visual Studio 2010\Projects\03_Exc_OpenGL_Framework\03_Exc_OpenGL_Framework\visualstudio\01-CubeViewer\01-CubeViewer.sln">
+</Property><Property Name="Fichier d'options utilisateur" Value="C:\Users\Aelos\Documents\Visual Studio 2010\Projects\03_Exc_OpenGL_Framework\03_Exc_OpenGL_Framework\visualstudio\01-CubeViewer\01-CubeViewer.suo">
+</Property><Property Name="Date" Value="jeudi 18 octobre 2012">
+</Property><Property Name="Time" Value="08:27">
+</Property></Properties><Event ErrorLevel="0" Project="" Source="01-CubeViewer.sln" Description="Fichier correctement sauvegardé en tant que C:\Users\Aelos\Documents\Visual Studio 2010\Projects\03_Exc_OpenGL_Framework\03_Exc_OpenGL_Framework\visualstudio\01-CubeViewer\01-CubeViewer.sln.old">
+</Event><Event ErrorLevel="0" Project="" Source="01-CubeViewer.suo" Description="Fichier correctement sauvegardé en tant que C:\Users\Aelos\Documents\Visual Studio 2010\Projects\03_Exc_OpenGL_Framework\03_Exc_OpenGL_Framework\visualstudio\01-CubeViewer\01-CubeViewer.suo.old">
+</Event><Event ErrorLevel="0" Project="01-CubeViewer" Source="01-CubeViewer.vcproj" Description="Converting project file 'C:\Users\Aelos\Documents\Visual Studio 2010\Projects\03_Exc_OpenGL_Framework\03_Exc_OpenGL_Framework\visualstudio\01-CubeViewer\01-CubeViewer.vcproj'.">
+</Event><Event ErrorLevel="1" Project="01-CubeViewer" Source="01-CubeViewer.vcproj" Description="This application has been updated to include settings related to the User Account Control (UAC) feature of Windows Vista. By default, when run on Windows Vista with UAC enabled, this application is marked to run with the same privileges as the process that launched it. This marking also disables the application from running with virtualization. You can change UAC related settings from the Property Pages of the project.">
+</Event><Event ErrorLevel="1" Project="01-CubeViewer" Source="01-CubeViewer.vcproj" Description="VCWebServiceProxyGeneratorTool is no longer supported. The tool has been removed from your project settings.">
+</Event><Event ErrorLevel="1" Project="01-CubeViewer" Source="01-CubeViewer.vcproj" Description="Attribute 'Detect64BitPortabilityProblems' of 'VCCLCompilerTool' is not supported in this version and has been removed during conversion.">
+</Event><Event ErrorLevel="0" Project="01-CubeViewer" Source="01-CubeViewer.vcproj" Description="Web deployment to the local IIS server is no longer supported. The Web Deployment build tool has been removed from your project settings.">
+</Event><Event ErrorLevel="1" Project="01-CubeViewer" Source="01-CubeViewer.vcproj" Description="Attribute 'Detect64BitPortabilityProblems' of 'VCCLCompilerTool' is not supported in this version and has been removed during conversion.">
+</Event><Event ErrorLevel="0" Project="01-CubeViewer" Source="01-CubeViewer.vcproj" Description="Done converting to new project file 'C:\Users\Aelos\Documents\Visual Studio 2010\Projects\03_Exc_OpenGL_Framework\03_Exc_OpenGL_Framework\visualstudio\01-CubeViewer\01-CubeViewer.vcxproj'.">
+</Event><Event ErrorLevel="3" Project="01-CubeViewer" Source="01-CubeViewer.vcproj" Description="Converted">
+</Event><Event ErrorLevel="0" Project="" Source="01-CubeViewer.sln" Description="Solution correctement convertie">
+</Event><Event ErrorLevel="3" Project="" Source="01-CubeViewer.sln" Description="Converted">
+</Event></UpgradeLog>
