@@ -32,10 +32,14 @@ init()
 	
 	// move plane so it is lower than camera
 	plane->translateWorld( Vector3(0.0,-6.0,0.0) );
+	//plane->rotateObject( Vector3(1.0,0.00,0.0) , 0.4 );
 	sky->translateWorld( Vector3(0.0, 6.0, 0.0) );
+
+	load_mesh();
 
 	m_meshes.push_back(plane);
 	m_meshes.push_back(sky);
+	m_meshes.push_back(&m_water);
 	
 	// put a light in the sky
 	m_light.translateWorld( Vector3(0,5,0) );
@@ -45,6 +49,7 @@ init()
 	
 	// load shaders
 	m_diffuseShader.create("diffuse.vs", "diffuse.fs");
+	m_textureShader.create("texture.vs", "texture.fs");
 }
 
 // Create the water plane with its vertices and normals and colors.
@@ -82,6 +87,23 @@ createWaterPlane()
 
     return water;
 }
+
+void
+WaterRenderer::
+load_mesh()
+{
+	Vector3 bbmin, bbmax;
+	double radius;
+	Vector3 center;
+	
+	// load mesh from obj
+	Mesh3DReader::read( "C:\\Users\\Aelos\\Documents\\GitHub\\WaterSimulation\\WaterRenderer\\src\\exercises\\Water\\water4xw1.obj", m_water, "C:\Users\Aelos\Documents\GitHub\WaterSimulation\WaterRenderer\src\exercises\Water\water4xw1.mtl");
+			
+	// calculate normals
+	if(!m_water.hasNormals())
+		m_water.calculateVertexNormals();
+}
+
 
 void
 WaterRenderer::
@@ -129,7 +151,6 @@ WaterRenderer::
 draw_scene(DrawMode _draw_mode)
 { 
 	// clear screen
-	glEnable(GL_DEPTH_TEST);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
 	for (std::vector<Mesh3D*>::iterator mIt = m_meshes.begin(); mIt != m_meshes.end(); ++mIt)
@@ -143,6 +164,9 @@ void
 WaterRenderer::
 draw_mesh(Mesh3D *mesh)
 {	
+
+	glEnable(GL_DEPTH_TEST);
+	
 	Vector3 lightPosInCamera(0.0,0.0,0.0);
 	lightPosInCamera = m_camera.getTransformation().Inverse()*m_light.origin();
 	
@@ -159,6 +183,37 @@ draw_mesh(Mesh3D *mesh)
     m_diffuseShader.setMatrix4x4Uniform("ModelWorldTransform", mesh->getTransformation() );
     m_diffuseShader.setMatrix3x3Uniform("ModelWorldNormalTransform", mesh->getTransformation().Inverse().Transpose());
 	
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_NORMAL_ARRAY);
+	glEnableClientState(GL_COLOR_ARRAY);
+	
+	glVertexPointer( 3, GL_DOUBLE, 0, mesh->getVertexPointer() );
+	glNormalPointer( GL_DOUBLE, 0, mesh->getNormalPointer() );
+	glColorPointer( 3, GL_DOUBLE, 0, mesh->getColorPointer() );
+	
+	glDrawElements( GL_TRIANGLES, mesh->getNumberOfFaces()*3, GL_UNSIGNED_INT, mesh->getVertexIndicesPointer() );
+	
+	glDisableClientState(GL_COLOR_ARRAY);
+	glDisableClientState(GL_NORMAL_ARRAY);
+	glDisableClientState(GL_VERTEX_ARRAY);
+
+	// finally, unbind the shader
+	m_diffuseShader.unbind();
+}
+
+void
+WaterRenderer::
+draw_textured(Mesh3D *mesh) {
+
+	glEnable(GL_DEPTH_TEST);
+	
+	m_textureShader.bind(); 
+	
+	// set parameters to send to the shader
+	m_textureShader.setMatrix4x4Uniform("worldcamera", m_camera.getTransformation().Inverse());
+	m_textureShader.setMatrix4x4Uniform("projection", m_camera.getProjectionMatrix());
+	m_textureShader.setMatrix4x4Uniform("modelworld", mesh->getTransformation() );
+   
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_NORMAL_ARRAY);
 	glEnableClientState(GL_COLOR_ARRAY);
