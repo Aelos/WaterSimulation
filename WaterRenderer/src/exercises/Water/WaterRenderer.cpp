@@ -28,11 +28,14 @@ init()
 
 	// create uniform cube
 	Mesh3D* plane = createWaterPlane();
+	Mesh3D* sky = createWaterPlane();
 	
 	// move plane so it is lower than camera
-	plane->translateWorld( Vector3(0.0,-10.0,0.0) );
+	plane->translateWorld( Vector3(0.0,-6.0,0.0) );
+	sky->translateWorld( Vector3(0.0, 6.0, 0.0) );
 
 	m_meshes.push_back(plane);
+	m_meshes.push_back(sky);
 	
 	// put a light in the sky
 	m_light.translateWorld( Vector3(0,5,0) );

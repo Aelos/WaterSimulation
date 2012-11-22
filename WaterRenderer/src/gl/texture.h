@@ -17,7 +17,7 @@ class Texture
 {
 public:
 	Texture();
-	Texture(unsigned int _width, 
+	Texture(unsigned int _width,
 			unsigned int _height, 
 			unsigned int _internalFormat, 
 			unsigned int _format,

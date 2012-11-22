@@ -30,6 +30,7 @@ protected:
 protected:
 	
 	Shader m_diffuseShader;
+	Shader m_textureShader;
 	Light3D m_light;
 	
 	// meshes
