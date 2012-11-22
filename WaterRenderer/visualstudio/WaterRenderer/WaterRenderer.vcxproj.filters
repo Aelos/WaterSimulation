@@ -106,10 +106,22 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\src\exercises\Water\plane.fs">
+    <None Include="..\..\src\exercises\Water\diffuse.fs">
       <Filter>Source Files</Filter>
     </None>
-    <None Include="..\..\src\exercises\Water\plane.vs">
+    <None Include="..\..\src\exercises\Water\diffuse.vs">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="..\..\src\exercises\Water\texture.fs">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="..\..\src\exercises\Water\texture.vs">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="..\..\src\exercises\Water\fresnel.fs">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="..\..\src\exercises\Water\fresnel.vs">
       <Filter>Source Files</Filter>
     </None>
   </ItemGroup>

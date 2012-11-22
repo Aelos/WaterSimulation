@@ -122,8 +122,12 @@
     <ClInclude Include="..\..\src\utils\StopWatch.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\src\exercises\Water\plane.fs" />
-    <None Include="..\..\src\exercises\Water\plane.vs" />
+    <None Include="..\..\src\exercises\Water\diffuse.fs" />
+    <None Include="..\..\src\exercises\Water\diffuse.vs" />
+    <None Include="..\..\src\exercises\Water\fresnel.fs" />
+    <None Include="..\..\src\exercises\Water\fresnel.vs" />
+    <None Include="..\..\src\exercises\Water\texture.fs" />
+    <None Include="..\..\src\exercises\Water\texture.vs" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
