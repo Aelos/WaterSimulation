@@ -97,7 +97,7 @@ load_mesh()
 	Vector3 center;
 	
 	// load mesh from obj
-	Mesh3DReader::read( "C:\\Users\\Aelos\\Documents\\GitHub\\WaterSimulation\\WaterRenderer\\src\\exercises\\Water\\water4xw1.obj", m_water, "C:\Users\Aelos\Documents\GitHub\WaterSimulation\WaterRenderer\src\exercises\Water\water4xw1.mtl");
+	Mesh3DReader::read( "water.obj", m_water, "water.mtl");
 			
 	// calculate normals
 	if(!m_water.hasNormals())
