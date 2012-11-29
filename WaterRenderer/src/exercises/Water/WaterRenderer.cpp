@@ -27,20 +27,18 @@ init()
     TrackballViewer::init();
 
 	// create uniform cube
-	Mesh3D* plane = createWaterPlane();
 	Mesh3D* sky = createWaterPlane();
 	
 	// move plane so it is lower than camera
-	plane->translateWorld( Vector3(0.0,-6.0,0.0) );
-	//plane->rotateObject( Vector3(1.0,0.00,0.0) , 0.4 );
 	sky->translateWorld( Vector3(0.0, 6.0, 0.0) );
 
 	load_mesh();
 
-	m_meshes.push_back(plane);
 	m_meshes.push_back(sky);
-	m_meshes.push_back(&m_water);
 	
+	m_water.translateWorld( Vector3(0,-6,0) );
+	m_water.scaleObject( Vector3 (20,20,20) );
+
 	// put a light in the sky
 	m_light.translateWorld( Vector3(0,5,0) );
 
@@ -152,12 +150,16 @@ draw_scene(DrawMode _draw_mode)
 { 
 	// clear screen
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	
+	glDisable(GL_CULL_FACE);
+	glEnable(GL_MULTISAMPLE);
+
 	for (std::vector<Mesh3D*>::iterator mIt = m_meshes.begin(); mIt != m_meshes.end(); ++mIt)
     {
         Mesh3D *mesh = *mIt;
         draw_mesh(mesh);
 	}
+
+	draw_textured(&m_water);
 }
 
 void
@@ -204,7 +206,7 @@ draw_mesh(Mesh3D *mesh)
 void
 WaterRenderer::
 draw_textured(Mesh3D *mesh) {
-
+	
 	glEnable(GL_DEPTH_TEST);
 	
 	m_textureShader.bind(); 
@@ -213,14 +215,23 @@ draw_textured(Mesh3D *mesh) {
 	m_textureShader.setMatrix4x4Uniform("worldcamera", m_camera.getTransformation().Inverse());
 	m_textureShader.setMatrix4x4Uniform("projection", m_camera.getProjectionMatrix());
 	m_textureShader.setMatrix4x4Uniform("modelworld", mesh->getTransformation() );
-   
+
+	m_textureShader.setMatrix3x3Uniform("modelworldNormal", mesh->getTransformation().Inverse().Transpose());
+	m_textureShader.setMatrix3x3Uniform("worldcameraNormal", mesh->getTransformation().Transpose());
+	
+
+	mesh->getMaterial(0).m_diffuseTexture.bind();
+	m_textureShader.setIntUniform("texture", mesh->getMaterial(0).m_diffuseTexture.getLayer());
+	
+
+
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_NORMAL_ARRAY);
-	glEnableClientState(GL_COLOR_ARRAY);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	
 	glVertexPointer( 3, GL_DOUBLE, 0, mesh->getVertexPointer() );
 	glNormalPointer( GL_DOUBLE, 0, mesh->getNormalPointer() );
-	glColorPointer( 3, GL_DOUBLE, 0, mesh->getColorPointer() );
+	glTexCoordPointer( 2, GL_DOUBLE, 0, mesh->getUvTextureCoordPointer() );
 	
 	glDrawElements( GL_TRIANGLES, mesh->getNumberOfFaces()*3, GL_UNSIGNED_INT, mesh->getVertexIndicesPointer() );
 	
@@ -229,5 +240,26 @@ draw_textured(Mesh3D *mesh) {
 	glDisableClientState(GL_VERTEX_ARRAY);
 
 	// finally, unbind the shader
-	m_diffuseShader.unbind();
+	mesh->getMaterial(0).m_diffuseTexture.unbind();
+	m_textureShader.unbind();
+}
+
+void
+drawEnvironmentMapped() {
+	glEnable(GL_TEXTURE_CUBE_MAP_EXT); 
+	
+	GLubyte face[6][64][64][3];
+	for (int i=0; i<6; i++) { 
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X_EXT + i, 
+		0,                  //level 
+		GL_RGB8,            //internal format 
+		64,                 //width 
+		64,                 //height 
+		0,                  //border 
+		GL_RGB,             //format 
+		GL_UNSIGNED_BYTE,   //type 
+		&face[i][0][0][0]); // pixel data
+	}
+
+	glDisable(GL_TEXTURE_CUBE_MAP_EXT);
 }
