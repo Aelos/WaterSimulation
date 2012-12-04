@@ -31,16 +31,16 @@ init()
 	
 	//m_meshes.push_back(sky);
 	
-	m_water.translateWorld( Vector3(0,-8,0) );
+	m_water.translateWorld( Vector3(0,-6,0) );
 	m_water.scaleObject( Vector3 (20,20,20) );
 
-	m_sky.scaleObject( Vector3 (15,15,15) );
+	m_sky.scaleObject( Vector3 (10,10,10) );
 
 	// put a light in the sky
 	m_light.translateWorld( Vector3(0,0,0) );
 
 	// set camera to look at world coordinate center
-    set_scene_pos(Vector3(0.0, 0.0, 0.0), 2.5);
+    set_scene_pos(Vector3(0.0, 0.0, 0.0), 2);
 	
 	// load shaders
 	m_diffuseShader.create("diffuse.vs", "diffuse.fs");
@@ -93,17 +93,7 @@ keyboard(int key, int x, int y)
 	{			
 		case 'r':
 			// reset camera position
-			m_camera.setIdentity();
-            
-            // delete existing meshes
-            for (std::vector<Mesh3D*>::iterator mIt = m_meshes.begin(); mIt != m_meshes.end(); ++mIt)
-            {
-                delete *mIt;
-            }
-            m_meshes.clear();
-            
-            // reinitialize
-            init();
+			m_camera.setIdentity(); 
 			break;
 		default:
 			TrackballViewer::keyboard(key, x, y);
@@ -133,55 +123,11 @@ draw_scene(DrawMode _draw_mode)
 	glDisable(GL_CULL_FACE);
 	glEnable(GL_MULTISAMPLE);
 
-	for (std::vector<Mesh3D*>::iterator mIt = m_meshes.begin(); mIt != m_meshes.end(); ++mIt)
-    {
-        Mesh3D *mesh = *mIt;
-        draw_mesh(mesh);
-	}
-
 	glDisable(GL_DEPTH_TEST);
 	draw_textured(&m_sky);
+
 	glEnable(GL_DEPTH_TEST);
 	draw_textured(&m_water);
-}
-
-void
-WaterRenderer::
-draw_mesh(Mesh3D *mesh)
-{	
-
-	Vector3 lightPosInCamera(0.0,0.0,0.0);
-	lightPosInCamera = m_camera.getTransformation().Inverse()*m_light.origin();
-	
-	// first bind the shader
-	m_diffuseShader.bind(); 
-	
-	// set parameters to send to the shader
-	m_diffuseShader.setMatrix4x4Uniform("WorldCameraTransform", m_camera.getTransformation().Inverse());
-	m_diffuseShader.setMatrix3x3Uniform("WorldCameraNormalTransform", m_camera.getTransformation().Transpose());
-	m_diffuseShader.setMatrix4x4Uniform("ProjectionMatrix", m_camera.getProjectionMatrix());
-	m_diffuseShader.setVector3Uniform("lightposition", lightPosInCamera.x, lightPosInCamera.y, lightPosInCamera.z);
-	
-	// send the model parameters to the shader
-    m_diffuseShader.setMatrix4x4Uniform("ModelWorldTransform", mesh->getTransformation() );
-    m_diffuseShader.setMatrix3x3Uniform("ModelWorldNormalTransform", mesh->getTransformation().Inverse().Transpose());
-	
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_NORMAL_ARRAY);
-	glEnableClientState(GL_COLOR_ARRAY);
-	
-	glVertexPointer( 3, GL_DOUBLE, 0, mesh->getVertexPointer() );
-	glNormalPointer( GL_DOUBLE, 0, mesh->getNormalPointer() );
-	glColorPointer( 3, GL_DOUBLE, 0, mesh->getColorPointer() );
-	
-	glDrawElements( GL_TRIANGLES, mesh->getNumberOfFaces()*3, GL_UNSIGNED_INT, mesh->getVertexIndicesPointer() );
-	
-	glDisableClientState(GL_COLOR_ARRAY);
-	glDisableClientState(GL_NORMAL_ARRAY);
-	glDisableClientState(GL_VERTEX_ARRAY);
-
-	// finally, unbind the shader
-	m_diffuseShader.unbind();
 }
 
 void
