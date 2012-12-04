@@ -3,7 +3,7 @@ uniform mat4 worldcamera;
 uniform mat4 projection;
 
 uniform mat3 modelworldNormal;
-uniform mat3 worldCameraNormal;
+uniform mat3 worldcameraNormal;
 
 uniform vec3 lightposition;
 
@@ -18,7 +18,7 @@ void main()
 
 	lightDir = normalize(vertex - lightposition);
 
-    normal = normalize(worldCameraNormal*(modelworldNormal*(gl_Normal)));
+    normal = normalize( worldcameraNormal * modelworldNormal * gl_Normal );
 
 	gl_Position = projection * worldcamera * modelworld * gl_Vertex;
 
