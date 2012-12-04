@@ -31,16 +31,20 @@ protected:
 	
 	Shader m_diffuseShader;
 	Shader m_textureShader;
+	Shader m_environmentShader;
 	Light3D m_light;
 	Mesh3D m_water;
+	Mesh3D m_sky;
 	
 	// meshes
     std::vector< Mesh3D* > m_meshes;
 	
-	void load_mesh();
+	void load_water();
+	void load_sky();
 	void draw_scene(DrawMode _draw_mode);
 	void draw_mesh(Mesh3D *mesh);
 	void draw_textured(Mesh3D *mesh);
+	void draw_environment_map();
 };
 
 

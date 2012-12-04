@@ -27,17 +27,20 @@ init()
     TrackballViewer::init();
 
 	// create uniform cube
-	Mesh3D* sky = createWaterPlane();
+	//Mesh3D* sky = createWaterPlane();
 	
 	// move plane so it is lower than camera
-	sky->translateWorld( Vector3(0.0, 6.0, 0.0) );
+	//sky->translateWorld( Vector3(0.0, 6.0, 0.0) );
 
-	load_mesh();
-
-	m_meshes.push_back(sky);
+	load_water();
+	load_sky();
+	
+	//m_meshes.push_back(sky);
 	
 	m_water.translateWorld( Vector3(0,-6,0) );
 	m_water.scaleObject( Vector3 (20,20,20) );
+
+	m_sky.scaleObject( Vector3 (15,15,15) );
 
 	// put a light in the sky
 	m_light.translateWorld( Vector3(0,5,0) );
@@ -48,6 +51,7 @@ init()
 	// load shaders
 	m_diffuseShader.create("diffuse.vs", "diffuse.fs");
 	m_textureShader.create("texture.vs", "texture.fs");
+	m_environmentShader.create("fresnel.vs", "fresnel.fs");
 }
 
 // Create the water plane with its vertices and normals and colors.
@@ -88,7 +92,7 @@ createWaterPlane()
 
 void
 WaterRenderer::
-load_mesh()
+load_water()
 {
 	Vector3 bbmin, bbmax;
 	double radius;
@@ -100,6 +104,22 @@ load_mesh()
 	// calculate normals
 	if(!m_water.hasNormals())
 		m_water.calculateVertexNormals();
+}
+
+void
+WaterRenderer::
+load_sky()
+{
+	Vector3 bbmin, bbmax;
+	double radius;
+	Vector3 center;
+	
+	// load mesh from obj
+	Mesh3DReader::read( "sky.obj", m_sky, "sky.mtl");
+			
+	// calculate normals
+	if(!m_sky.hasNormals())
+		m_sky.calculateVertexNormals();
 }
 
 
@@ -160,6 +180,7 @@ draw_scene(DrawMode _draw_mode)
 	}
 
 	draw_textured(&m_water);
+	draw_textured(&m_sky);
 }
 
 void
@@ -215,6 +236,11 @@ draw_textured(Mesh3D *mesh) {
 	m_textureShader.setMatrix4x4Uniform("worldcamera", m_camera.getTransformation().Inverse());
 	m_textureShader.setMatrix4x4Uniform("projection", m_camera.getProjectionMatrix());
 	m_textureShader.setMatrix4x4Uniform("modelworld", mesh->getTransformation() );
+	
+	Vector3 lightPosInCamera(0.0,0.0,0.0);
+	lightPosInCamera = m_camera.getTransformation().Inverse()*m_light.origin();
+	m_textureShader.setVector3Uniform("lightposition", lightPosInCamera.x, lightPosInCamera.y, lightPosInCamera.z);
+
 
 	m_textureShader.setMatrix3x3Uniform("modelworldNormal", mesh->getTransformation().Inverse().Transpose());
 	m_textureShader.setMatrix3x3Uniform("worldcameraNormal", mesh->getTransformation().Transpose());
@@ -244,22 +270,60 @@ draw_textured(Mesh3D *mesh) {
 	m_textureShader.unbind();
 }
 
-void
-drawEnvironmentMapped() {
-	glEnable(GL_TEXTURE_CUBE_MAP_EXT); 
-	
-	GLubyte face[6][64][64][3];
-	for (int i=0; i<6; i++) { 
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X_EXT + i, 
-		0,                  //level 
-		GL_RGB8,            //internal format 
-		64,                 //width 
-		64,                 //height 
-		0,                  //border 
-		GL_RGB,             //format 
-		GL_UNSIGNED_BYTE,   //type 
-		&face[i][0][0][0]); // pixel data
-	}
+void::
+WaterRenderer::
+draw_environment_map() {
 
-	glDisable(GL_TEXTURE_CUBE_MAP_EXT);
+	glEnable(GL_DEPTH_TEST);
+	m_environmentShader.bind();
+
+	m_textureShader.setVector3Uniform("eyepos", m_camera.origin().x, m_camera.origin().y, m_camera.origin().z);
+	m_textureShader.setFloatUniform("fresnelBias", 5);
+	m_textureShader.setFloatUniform("fresnelScale", 5);
+	m_textureShader.setFloatUniform("fresnelPower", 5);
+	m_textureShader.setFloatUniform("etaRatio", 5);
+
+	GLuint g_cubeTexture = 0;
+ 
+	const int CUBE_TEXTURE_SIZE = 256;
+ 
+	glGenTextures(1, &g_cubeTexture);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, g_cubeTexture);
+
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BASE_LEVEL, 0);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, 0);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        
+    std::vector<GLubyte> testData(CUBE_TEXTURE_SIZE * CUBE_TEXTURE_SIZE * 256, 128);
+    std::vector<GLubyte> xData(CUBE_TEXTURE_SIZE * CUBE_TEXTURE_SIZE * 256, 255);
+ 
+    for (int loop = 0; loop < 6; ++loop) {
+		if(loop) {
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + loop, 0, GL_RGBA8,
+					CUBE_TEXTURE_SIZE, CUBE_TEXTURE_SIZE, 0, GL_RGBA, GL_UNSIGNED_BYTE, &testData[0]);
+		} else {
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + loop, 0, GL_RGBA8,
+					CUBE_TEXTURE_SIZE, CUBE_TEXTURE_SIZE, 0, GL_RGBA, GL_UNSIGNED_BYTE, &xData[0]);
+        }
+    }
+    glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+
+	m_environmentShader.setIntUniform("env", g_cubeTexture);
+
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_NORMAL_ARRAY);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	
+	glVertexPointer( 3, GL_DOUBLE, 0, m_water.getVertexPointer() );
+	glNormalPointer( GL_DOUBLE, 0, m_water.getNormalPointer() );
+	glTexCoordPointer( 2, GL_DOUBLE, 0, m_water.getUvTextureCoordPointer() );
+	
+	glDrawElements( GL_TRIANGLES, m_water.getNumberOfFaces()*3, GL_UNSIGNED_INT, m_water.getVertexIndicesPointer() );
+	
+	glDisableClientState(GL_COLOR_ARRAY);
+	glDisableClientState(GL_NORMAL_ARRAY);
+	glDisableClientState(GL_VERTEX_ARRAY);
+
+	m_environmentShader.unbind();
 }
