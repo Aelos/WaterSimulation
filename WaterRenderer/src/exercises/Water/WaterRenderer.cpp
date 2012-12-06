@@ -11,12 +11,8 @@ WaterRenderer(const char* _title, int _width, int _height)
 WaterRenderer::
 ~WaterRenderer()
 {
-    // clean up any existing mesh
-    for (std::vector<Mesh3D*>::iterator mIt = m_meshes.begin(); mIt != m_meshes.end(); ++mIt)
-    {
-        delete *mIt;
-    }
-    m_meshes.clear();
+	m_water.clear();
+	m_sky.clear();
 }
 
 void 
@@ -38,14 +34,14 @@ init()
 
 	// put a light in the sky
 	m_light.translateWorld( Vector3(0,0,0) );
+	lightColor = Vector4(1, 1, 1, 1.0);
 
 	// set camera to look at world coordinate center
     set_scene_pos(Vector3(0.0, 0.0, 0.0), 2);
 	
 	// load shaders
-	m_diffuseShader.create("diffuse.vs", "diffuse.fs");
 	m_textureShader.create("texture.vs", "texture.fs");
-	//m_environmentShader.create("fresnel.vs", "fresnel.fs");
+	m_environmentShader.create("fresnel.vs", "fresnel.fs");
 }
 
 void
@@ -126,8 +122,8 @@ draw_scene(DrawMode _draw_mode)
 	glDisable(GL_DEPTH_TEST);
 	draw_textured(&m_sky);
 
-	glEnable(GL_DEPTH_TEST);
-	draw_textured(&m_water);
+	//glEnable(GL_DEPTH_TEST);
+	draw_water();
 }
 
 void
@@ -144,7 +140,7 @@ draw_textured(Mesh3D *mesh) {
 	Vector3 lightPosInCamera(0.0,0.0,0.0);
 	lightPosInCamera = m_camera.getTransformation().Inverse()*m_light.origin();
 	m_textureShader.setVector3Uniform("lightposition", lightPosInCamera.x, lightPosInCamera.y, lightPosInCamera.z);
-
+	m_textureShader.setVector4Uniform("lightcolor", lightColor[0], lightColor[1], lightColor[2], lightColor[3]);
 
 	m_textureShader.setMatrix3x3Uniform("modelworldNormal", mesh->getTransformation().Inverse().Transpose());
 	m_textureShader.setMatrix3x3Uniform("worldcameraNormal", m_camera.getTransformation().Transpose());
@@ -178,19 +174,18 @@ draw_textured(Mesh3D *mesh) {
 
 void::
 WaterRenderer::
-draw_environment_map() {
+draw_water() {
 
-	glEnable(GL_DEPTH_TEST);
 	m_environmentShader.bind();
 
-	m_textureShader.setVector3Uniform("eyepos", m_camera.origin().x, m_camera.origin().y, m_camera.origin().z);
-	m_textureShader.setFloatUniform("fresnelBias", 5);
-	m_textureShader.setFloatUniform("fresnelScale", 5);
-	m_textureShader.setFloatUniform("fresnelPower", 5);
-	m_textureShader.setFloatUniform("etaRatio", 5);
+	m_environmentShader.setVector3Uniform("eyePos", m_camera.origin().x, m_camera.origin().y, m_camera.origin().z);
+	m_environmentShader.setFloatUniform("fresnelBias", 1);
+	m_environmentShader.setFloatUniform("fresnelScale", 1);
+	m_environmentShader.setFloatUniform("fresnelPower", 1);
+	m_environmentShader.setFloatUniform("etaRatio", 1);
 
 	GLuint g_cubeTexture = 0;
- 
+
 	const int CUBE_TEXTURE_SIZE = 256;
  
 	glGenTextures(1, &g_cubeTexture);
@@ -220,14 +215,17 @@ draw_environment_map() {
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_NORMAL_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	
+
 	glVertexPointer( 3, GL_DOUBLE, 0, m_water.getVertexPointer() );
 	glNormalPointer( GL_DOUBLE, 0, m_water.getNormalPointer() );
 	glTexCoordPointer( 2, GL_DOUBLE, 0, m_water.getUvTextureCoordPointer() );
 	
-	glDrawElements( GL_TRIANGLES, m_water.getNumberOfFaces()*3, GL_UNSIGNED_INT, m_water.getVertexIndicesPointer() );
+	for(unsigned int i = 0; i < m_water.getNumberOfParts(); i++)
+	{
+		glDrawElements( GL_TRIANGLES, m_water.getNumberOfFaces(i)*3, GL_UNSIGNED_INT, m_water.getVertexIndicesPointer(i) );
+	}
 	
-	glDisableClientState(GL_COLOR_ARRAY);
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glDisableClientState(GL_NORMAL_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
 
