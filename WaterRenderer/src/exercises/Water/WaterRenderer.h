@@ -10,7 +10,7 @@
 #include "../../gl/Light3D.h"
 #include "../../gl/fbo.h"
 #include "../../utils/Mesh3DReader.h"
-#include "../../utils/EasyBMP.h"
+#include "../../utils/Bitmap.h"
 
 class WaterRenderer : public TrackballViewer
 {

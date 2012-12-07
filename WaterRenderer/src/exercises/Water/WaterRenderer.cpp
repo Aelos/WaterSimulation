@@ -1,5 +1,4 @@
 #include "WaterRenderer.h"
-#include "../../utils/EasyBMP.h"
 
 WaterRenderer::
 WaterRenderer(const char* _title, int _width, int _height)
@@ -170,21 +169,21 @@ generateCubeMap() {
 	};
 
 	char CubeMapFileName[6][30]={	       // Liste des noms de fichiers des textures
-		"textures/PositiveX.tga",
-		"textures/NegativeX.tga",
-		"textures/PositiveY.tga",
-		"textures/NegativeY.tga",
-		"textures/PositiveZ.tga",
-		"textures/NegativeZ.tga"
+		"textures/PositiveX.bmp",
+		"textures/NegativeX.bmp",
+		"textures/PositiveY.bmp",
+		"textures/NegativeY.bmp",
+		"textures/PositiveZ.bmp",
+		"textures/NegativeZ.bmp"
 	};
 
 	char CubeMapFileName2[6][30]={	       // Liste des noms de fichiers des textures
-		"textures/lostvalley_north.tga",
-		"textures/lostvalley_south.tga",
-		"textures/lostvalley_up.tga",
-		"textures/lostvalley_down.tga",
-		"textures/lostvalley_east.tga",
-		"textures/lostvalley_west.tga"
+		"textures/lostvalley_north.bmp",
+		"textures/lostvalley_south.bmp",
+		"textures/lostvalley_up.bmp",
+		"textures/lostvalley_down.bmp",
+		"textures/lostvalley_east.bmp",
+		"textures/lostvalley_west.bmp"
 	};
 
 	
@@ -199,9 +198,11 @@ generateCubeMap() {
 	int i=0;
 	for (i = 0; i < 6; i++)
 	{
-		//BMP img;
-		//img.ReadFromFile(CubeMapFileName2[i]);
-		//glTexImage2D(CubeMapTarget[i], 0, GL_RGB, img.TellWidth(), img.TellHeight(), 0, GL_RGB, GL_UNSIGNED_BYTE, img.);  
+		Bitmap * img = new Bitmap();
+		if (img -> loadBMP(CubeMapFileName2[i])) {
+			glTexImage2D(CubeMapTarget[i], 0, GL_RGB, img->width, img->height, 0, GL_RGB, GL_UNSIGNED_BYTE, img->data);
+		}
+		  
 	}
 
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -236,8 +237,8 @@ draw_water() {
 	m_waterShader.setMatrix4x4Uniform("modelworld", m_water.getTransformation() );
 
 	m_waterShader.setVector3Uniform("eyePos", m_camera.origin().x, m_camera.origin().y, m_camera.origin().z);
-	m_waterShader.setFloatUniform("fresnelBias", 1);
-	m_waterShader.setFloatUniform("fresnelScale", 1);
+	m_waterShader.setFloatUniform("fresnelBias", 4);
+	m_waterShader.setFloatUniform("fresnelScale", 4);
 	m_waterShader.setFloatUniform("fresnelPower", 1);
 	m_waterShader.setFloatUniform("etaRatio", 1);
 

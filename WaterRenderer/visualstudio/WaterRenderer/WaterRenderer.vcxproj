@@ -101,7 +101,7 @@
     <ClCompile Include="..\..\src\gl\shader.cpp" />
     <ClCompile Include="..\..\src\gl\texture.cpp" />
     <ClCompile Include="..\..\src\gl\TrackballViewer.cpp" />
-    <ClCompile Include="..\..\src\utils\EasyBMP.cpp" />
+    <ClCompile Include="..\..\src\utils\Bitmap.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\exercises\Water\WaterRenderer.h" />
@@ -119,10 +119,7 @@
     <ClInclude Include="..\..\src\math\Vector2.h" />
     <ClInclude Include="..\..\src\math\Vector3.h" />
     <ClInclude Include="..\..\src\math\Vector4.h" />
-    <ClInclude Include="..\..\src\utils\EasyBMP.h" />
-    <ClInclude Include="..\..\src\utils\EasyBMP_BMP.h" />
-    <ClInclude Include="..\..\src\utils\EasyBMP_DataStructures.h" />
-    <ClInclude Include="..\..\src\utils\EasyBMP_VariousBMPutilities.h" />
+    <ClInclude Include="..\..\src\utils\Bitmap.h" />
     <ClInclude Include="..\..\src\utils\Mesh3DReader.h" />
     <ClInclude Include="..\..\src\utils\StopWatch.h" />
   </ItemGroup>
