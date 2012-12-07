@@ -101,6 +101,7 @@
     <ClCompile Include="..\..\src\gl\shader.cpp" />
     <ClCompile Include="..\..\src\gl\texture.cpp" />
     <ClCompile Include="..\..\src\gl\TrackballViewer.cpp" />
+    <ClCompile Include="..\..\src\utils\EasyBMP.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\exercises\Water\WaterRenderer.h" />
@@ -118,16 +119,18 @@
     <ClInclude Include="..\..\src\math\Vector2.h" />
     <ClInclude Include="..\..\src\math\Vector3.h" />
     <ClInclude Include="..\..\src\math\Vector4.h" />
+    <ClInclude Include="..\..\src\utils\EasyBMP.h" />
+    <ClInclude Include="..\..\src\utils\EasyBMP_BMP.h" />
+    <ClInclude Include="..\..\src\utils\EasyBMP_DataStructures.h" />
+    <ClInclude Include="..\..\src\utils\EasyBMP_VariousBMPutilities.h" />
     <ClInclude Include="..\..\src\utils\Mesh3DReader.h" />
     <ClInclude Include="..\..\src\utils\StopWatch.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\src\exercises\Water\diffuse.fs" />
-    <None Include="..\..\src\exercises\Water\diffuse.vs" />
-    <None Include="..\..\src\exercises\Water\fresnel.fs" />
-    <None Include="..\..\src\exercises\Water\fresnel.vs" />
-    <None Include="..\..\src\exercises\Water\texture.fs" />
-    <None Include="..\..\src\exercises\Water\texture.vs" />
+    <None Include="..\..\src\exercises\Water\skybox.fs" />
+    <None Include="..\..\src\exercises\Water\skybox.vs" />
+    <None Include="..\..\src\exercises\Water\water.fs" />
+    <None Include="..\..\src\exercises\Water\water.vs" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

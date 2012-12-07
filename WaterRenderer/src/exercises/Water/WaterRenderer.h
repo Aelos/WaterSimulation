@@ -10,6 +10,7 @@
 #include "../../gl/Light3D.h"
 #include "../../gl/fbo.h"
 #include "../../utils/Mesh3DReader.h"
+#include "../../utils/EasyBMP.h"
 
 class WaterRenderer : public TrackballViewer
 {
@@ -29,17 +30,19 @@ protected:
      
 protected:
 	
-	Shader m_textureShader;
-	Shader m_environmentShader;
+	Shader m_skyShader;
+	Shader m_waterShader;
 	Light3D m_light;
 	Vector4 lightColor;
 	Mesh3D m_water;
 	Mesh3D m_sky;
+	GLuint CubMapTextureID;
 	
 	void load_water();
 	void load_sky();
+	void generateCubeMap();
 	void draw_scene(DrawMode _draw_mode);
-	void draw_textured(Mesh3D *mesh);
+	void draw_sky();
 	void draw_water();
 };
 

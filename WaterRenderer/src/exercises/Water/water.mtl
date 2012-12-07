@@ -8,6 +8,6 @@ Ks 0.500000 0.500000 0.500000
 Ni 1.000000
 d 1.000000
 illum 0
-map_Kd water4xw1.tga
+map_Kd textures/water4xw1.tga
 
 

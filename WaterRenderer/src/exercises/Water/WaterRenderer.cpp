@@ -1,4 +1,5 @@
 #include "WaterRenderer.h"
+#include "../../utils/EasyBMP.h"
 
 WaterRenderer::
 WaterRenderer(const char* _title, int _width, int _height)
@@ -27,8 +28,8 @@ init()
 	
 	//m_meshes.push_back(sky);
 	
-	m_water.translateWorld( Vector3(0,-6,0) );
-	m_water.scaleObject( Vector3 (20,20,20) );
+	m_water.translateWorld( Vector3(0,-4,0) );
+	m_water.scaleObject( Vector3 (5,5,5) );
 
 	m_sky.scaleObject( Vector3 (10,10,10) );
 
@@ -39,19 +40,17 @@ init()
 	// set camera to look at world coordinate center
     set_scene_pos(Vector3(0.0, 0.0, 0.0), 2);
 	
+	generateCubeMap();
+	
 	// load shaders
-	m_textureShader.create("texture.vs", "texture.fs");
-	m_environmentShader.create("fresnel.vs", "fresnel.fs");
+	m_skyShader.create("skybox.vs", "skybox.fs");
+	m_waterShader.create("water.vs", "water.fs");
 }
 
 void
 WaterRenderer::
 load_water()
 {
-	Vector3 bbmin, bbmax;
-	double radius;
-	Vector3 center;
-	
 	// load mesh from obj
 	Mesh3DReader::read( "water.obj", m_water, "water.mtl");
 			
@@ -65,10 +64,6 @@ void
 WaterRenderer::
 load_sky()
 {
-	Vector3 bbmin, bbmax;
-	double radius;
-	Vector3 center;
-	
 	// load mesh from obj
 	Mesh3DReader::read( "sky.obj", m_sky, "sky.mtl");
 			
@@ -120,114 +115,152 @@ draw_scene(DrawMode _draw_mode)
 	glEnable(GL_MULTISAMPLE);
 
 	glDisable(GL_DEPTH_TEST);
-	draw_textured(&m_sky);
+	draw_sky();
 
-	//glEnable(GL_DEPTH_TEST);
+	glEnable(GL_DEPTH_TEST);
 	draw_water();
 }
 
 void
 WaterRenderer::
-draw_textured(Mesh3D *mesh) {
+draw_sky() {
 	
-	m_textureShader.bind(); 
+	m_skyShader.bind(); 
 	
 	// set parameters to send to the shader
-	m_textureShader.setMatrix4x4Uniform("worldcamera", m_camera.getTransformation().Inverse());
-	m_textureShader.setMatrix4x4Uniform("projection", m_camera.getProjectionMatrix());
-	m_textureShader.setMatrix4x4Uniform("modelworld", mesh->getTransformation() );
+	m_skyShader.setMatrix4x4Uniform("worldcamera", m_camera.getTransformation().Inverse());
+	m_skyShader.setMatrix4x4Uniform("projection", m_camera.getProjectionMatrix());
+	m_skyShader.setMatrix4x4Uniform("modelworld", m_sky.getTransformation() );
 	
-	Vector3 lightPosInCamera(0.0,0.0,0.0);
-	lightPosInCamera = m_camera.getTransformation().Inverse()*m_light.origin();
-	m_textureShader.setVector3Uniform("lightposition", lightPosInCamera.x, lightPosInCamera.y, lightPosInCamera.z);
-	m_textureShader.setVector4Uniform("lightcolor", lightColor[0], lightColor[1], lightColor[2], lightColor[3]);
-
-	m_textureShader.setMatrix3x3Uniform("modelworldNormal", mesh->getTransformation().Inverse().Transpose());
-	m_textureShader.setMatrix3x3Uniform("worldcameraNormal", m_camera.getTransformation().Transpose());
-	
-
-	mesh->getMaterial(0).m_diffuseTexture.bind();
-	m_textureShader.setIntUniform("texture", mesh->getMaterial(0).m_diffuseTexture.getLayer());
+	m_sky.getMaterial(0).m_diffuseTexture.bind();
+	m_skyShader.setIntUniform("texture", m_sky.getMaterial(0).m_diffuseTexture.getLayer());
 
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_NORMAL_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	
-	glVertexPointer( 3, GL_DOUBLE, 0, mesh->getVertexPointer() );
-	glNormalPointer( GL_DOUBLE, 0, mesh->getNormalPointer() );
-	glTexCoordPointer( 2, GL_DOUBLE, 0, mesh->getUvTextureCoordPointer() );
+	glVertexPointer( 3, GL_DOUBLE, 0, m_sky.getVertexPointer() );
+	glNormalPointer( GL_DOUBLE, 0, m_sky.getNormalPointer() );
+	glTexCoordPointer( 2, GL_DOUBLE, 0, m_sky.getUvTextureCoordPointer() );
 	
-	for(unsigned int i = 0; i < mesh->getNumberOfParts(); i++)
+	for(unsigned int i = 0; i < m_sky.getNumberOfParts(); i++)
 	{
-		glDrawElements( GL_TRIANGLES, mesh->getNumberOfFaces(i)*3, GL_UNSIGNED_INT, mesh->getVertexIndicesPointer(i) );
+		glDrawElements( GL_TRIANGLES, m_sky.getNumberOfFaces(i)*3, GL_UNSIGNED_INT, m_sky.getVertexIndicesPointer(i) );
 	}
 	
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glDisableClientState(GL_NORMAL_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
 
-	// finally, unbind the shader
-	mesh->getMaterial(0).m_diffuseTexture.unbind();
+	m_sky.getMaterial(0).m_diffuseTexture.unbind();
 
-	m_textureShader.unbind();
+	m_skyShader.unbind();
+}
+
+void
+WaterRenderer::
+generateCubeMap() {
+	GLenum CubeMapTarget[6] = {           // Liste des targets pour la création des textures de CubeMap
+		GL_TEXTURE_CUBE_MAP_POSITIVE_X,
+		GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
+		GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
+		GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
+		GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
+		GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
+	};
+
+	char CubeMapFileName[6][30]={	       // Liste des noms de fichiers des textures
+		"textures/PositiveX.tga",
+		"textures/NegativeX.tga",
+		"textures/PositiveY.tga",
+		"textures/NegativeY.tga",
+		"textures/PositiveZ.tga",
+		"textures/NegativeZ.tga"
+	};
+
+	char CubeMapFileName2[6][30]={	       // Liste des noms de fichiers des textures
+		"textures/lostvalley_north.tga",
+		"textures/lostvalley_south.tga",
+		"textures/lostvalley_up.tga",
+		"textures/lostvalley_down.tga",
+		"textures/lostvalley_east.tga",
+		"textures/lostvalley_west.tga"
+	};
+
+	
+	//Chargement en mémoire des textures
+	
+	
+	// On génère un ID de texture unique pour les 6 textures du CubeMap
+	
+	glGenTextures(1, &CubMapTextureID); 				    
+	glBindTexture(GL_TEXTURE_CUBE_MAP, CubMapTextureID);
+
+	int i=0;
+	for (i = 0; i < 6; i++)
+	{
+		//BMP img;
+		//img.ReadFromFile(CubeMapFileName2[i]);
+		//glTexImage2D(CubeMapTarget[i], 0, GL_RGB, img.TellWidth(), img.TellHeight(), 0, GL_RGB, GL_UNSIGNED_BYTE, img.);  
+	}
+
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP);
 }
 
 void::
 WaterRenderer::
 draw_water() {
 
-	m_environmentShader.bind();
-
-	m_environmentShader.setVector3Uniform("eyePos", m_camera.origin().x, m_camera.origin().y, m_camera.origin().z);
-	m_environmentShader.setFloatUniform("fresnelBias", 1);
-	m_environmentShader.setFloatUniform("fresnelScale", 1);
-	m_environmentShader.setFloatUniform("fresnelPower", 1);
-	m_environmentShader.setFloatUniform("etaRatio", 1);
-
-	GLuint g_cubeTexture = 0;
-
-	const int CUBE_TEXTURE_SIZE = 256;
- 
-	glGenTextures(1, &g_cubeTexture);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, g_cubeTexture);
-
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BASE_LEVEL, 0);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, 0);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        
-    std::vector<GLubyte> testData(CUBE_TEXTURE_SIZE * CUBE_TEXTURE_SIZE * 256, 128);
-    std::vector<GLubyte> xData(CUBE_TEXTURE_SIZE * CUBE_TEXTURE_SIZE * 256, 255);
- 
-    for (int loop = 0; loop < 6; ++loop) {
-		if(loop) {
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + loop, 0, GL_RGBA8,
-					CUBE_TEXTURE_SIZE, CUBE_TEXTURE_SIZE, 0, GL_RGBA, GL_UNSIGNED_BYTE, &testData[0]);
-		} else {
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + loop, 0, GL_RGBA8,
-					CUBE_TEXTURE_SIZE, CUBE_TEXTURE_SIZE, 0, GL_RGBA, GL_UNSIGNED_BYTE, &xData[0]);
-        }
-    }
-    glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-
-	m_environmentShader.setIntUniform("env", g_cubeTexture);
+	glEnable(GL_TEXTURE_GEN_S);
+	glEnable(GL_TEXTURE_GEN_T);
+	glEnable(GL_TEXTURE_GEN_R);
+	glEnable(GL_TEXTURE_CUBE_MAP);
+	glEnable(GL_NORMALIZE);
 
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_NORMAL_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	
+	m_waterShader.bind();
 
 	glVertexPointer( 3, GL_DOUBLE, 0, m_water.getVertexPointer() );
 	glNormalPointer( GL_DOUBLE, 0, m_water.getNormalPointer() );
 	glTexCoordPointer( 2, GL_DOUBLE, 0, m_water.getUvTextureCoordPointer() );
 	
-	for(unsigned int i = 0; i < m_water.getNumberOfParts(); i++)
-	{
-		glDrawElements( GL_TRIANGLES, m_water.getNumberOfFaces(i)*3, GL_UNSIGNED_INT, m_water.getVertexIndicesPointer(i) );
-	}
+	//set the shader parameters
+	m_waterShader.setMatrix4x4Uniform("worldcamera", m_camera.getTransformation().Inverse());
+	m_waterShader.setMatrix4x4Uniform("projection", m_camera.getProjectionMatrix());
+	m_waterShader.setMatrix4x4Uniform("modelworld", m_water.getTransformation() );
+
+	m_waterShader.setVector3Uniform("eyePos", m_camera.origin().x, m_camera.origin().y, m_camera.origin().z);
+	m_waterShader.setFloatUniform("fresnelBias", 1);
+	m_waterShader.setFloatUniform("fresnelScale", 1);
+	m_waterShader.setFloatUniform("fresnelPower", 1);
+	m_waterShader.setFloatUniform("etaRatio", 1);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, CubMapTextureID);
+	m_waterShader.setIntUniform("env", 0);
+
+	//Draw the water plane
 	
+	glDrawElements( GL_TRIANGLES, m_water.getNumberOfFaces()*3, GL_UNSIGNED_INT, m_water.getVertexIndicesPointer() );
+
+	
+	
+	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+	m_waterShader.unbind();
+
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glDisableClientState(GL_NORMAL_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
-
-	m_environmentShader.unbind();
+	
+	glDisable(GL_TEXTURE_CUBE_MAP);
+	glDisable(GL_NORMALIZE);
+	glDisable(GL_TEXTURE_GEN_S);
+	glDisable(GL_TEXTURE_GEN_T);
+	glDisable(GL_TEXTURE_GEN_R);
 }

@@ -1,3 +1,7 @@
+uniform mat4 modelworld;
+uniform mat4 worldcamera;
+uniform mat4 projection;
+
 // Position of the view eye in world space
 uniform vec3 eyePos;
 
@@ -26,8 +30,8 @@ void main()
 	
 	// Appoximation of the fresnel equation
 	refFactor = fresnelBias+fresnelScale*pow(1+dot(I,N), fresnelPower);
-
+	
 	// Transform vertex
 	gl_TexCoord[0] = gl_MultiTexCoord0;
-	gl_Position = ftransform();
+	gl_Position = projection * worldcamera * modelworld * gl_Vertex;
 }

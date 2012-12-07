@@ -25,6 +25,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
     </Filter>
+    <Filter Include="Source Files\utils">
+      <UniqueIdentifier>{7c4e1be0-71c7-42c2-b7dd-0d4239d45bbf}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\gl\fbo.cpp">
@@ -50,6 +53,9 @@
     </ClCompile>
     <ClCompile Include="..\..\src\exercises\Water\WaterRenderer.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\utils\EasyBMP.cpp">
+      <Filter>Source Files\utils</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -104,24 +110,30 @@
     <ClInclude Include="..\..\src\exercises\Water\WaterRenderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\utils\EasyBMP.h">
+      <Filter>Header Files\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\utils\EasyBMP_BMP.h">
+      <Filter>Header Files\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\utils\EasyBMP_DataStructures.h">
+      <Filter>Header Files\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\utils\EasyBMP_VariousBMPutilities.h">
+      <Filter>Header Files\utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\src\exercises\Water\diffuse.fs">
+    <None Include="..\..\src\exercises\Water\water.vs">
       <Filter>Source Files</Filter>
     </None>
-    <None Include="..\..\src\exercises\Water\diffuse.vs">
+    <None Include="..\..\src\exercises\Water\water.fs">
       <Filter>Source Files</Filter>
     </None>
-    <None Include="..\..\src\exercises\Water\texture.fs">
+    <None Include="..\..\src\exercises\Water\skybox.fs">
       <Filter>Source Files</Filter>
     </None>
-    <None Include="..\..\src\exercises\Water\texture.vs">
-      <Filter>Source Files</Filter>
-    </None>
-    <None Include="..\..\src\exercises\Water\fresnel.fs">
-      <Filter>Source Files</Filter>
-    </None>
-    <None Include="..\..\src\exercises\Water\fresnel.vs">
+    <None Include="..\..\src\exercises\Water\skybox.vs">
       <Filter>Source Files</Filter>
     </None>
   </ItemGroup>
