@@ -199,10 +199,9 @@ generateCubeMap() {
 	for (i = 0; i < 6; i++)
 	{
 		Bitmap * img = new Bitmap();
-		if (img -> loadBMP(CubeMapFileName2[i])) {
+		if (img -> loadBMP(CubeMapFileName[i])) {
 			glTexImage2D(CubeMapTarget[i], 0, GL_RGB, img->width, img->height, 0, GL_RGB, GL_UNSIGNED_BYTE, img->data);
-		}
-		  
+		} 
 	}
 
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -237,8 +236,8 @@ draw_water() {
 	m_waterShader.setMatrix4x4Uniform("modelworld", m_water.getTransformation() );
 
 	m_waterShader.setVector3Uniform("eyePos", m_camera.origin().x, m_camera.origin().y, m_camera.origin().z);
-	m_waterShader.setFloatUniform("fresnelBias", 4);
-	m_waterShader.setFloatUniform("fresnelScale", 4);
+	m_waterShader.setFloatUniform("fresnelBias", 1);
+	m_waterShader.setFloatUniform("fresnelScale", 1);
 	m_waterShader.setFloatUniform("fresnelPower", 1);
 	m_waterShader.setFloatUniform("etaRatio", 1);
 
