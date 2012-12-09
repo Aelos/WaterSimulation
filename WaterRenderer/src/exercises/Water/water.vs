@@ -1,4 +1,3 @@
-uniform mat4 modelworld;
 uniform mat4 worldcamera;
 uniform mat4 projection;
 
@@ -33,5 +32,5 @@ void main()
 	
 	// Transform vertex
 	gl_TexCoord[0] = gl_MultiTexCoord0;
-	gl_Position = projection * worldcamera * modelworld * gl_Vertex;
+	gl_Position = projection * worldcamera * gl_Vertex;
 }

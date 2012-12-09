@@ -12,7 +12,7 @@ WaterRenderer::
 ~WaterRenderer()
 {
 	m_water.clear();
-	m_sky.clear();
+	m_skybox.clear();
 }
 
 void 
@@ -22,16 +22,11 @@ init()
     // initialize parent
     TrackballViewer::init();
 
-	load_water();
-	load_sky();
-	
-	//m_meshes.push_back(sky);
+	m_water = *createPlane();
+	m_skybox = *createCube();
 	
 	m_water.translateWorld( Vector3(0,-4,0) );
-	m_water.scaleObject( Vector3 (5,5,5) );
-
-	m_sky.scaleObject( Vector3 (10,10,10) );
-
+	
 	// put a light in the sky
 	m_light.translateWorld( Vector3(0,0,0) );
 	lightColor = Vector4(1, 1, 1, 1.0);
@@ -48,33 +43,6 @@ init()
 
 void
 WaterRenderer::
-load_water()
-{
-	// load mesh from obj
-	Mesh3DReader::read( "water.obj", m_water, "water.mtl");
-			
-	// calculate normals
-	if(!m_water.hasNormals()) {
-		m_water.calculateVertexNormals();
-	}
-}
-
-void
-WaterRenderer::
-load_sky()
-{
-	// load mesh from obj
-	Mesh3DReader::read( "sky.obj", m_sky, "sky.mtl");
-			
-	// calculate normals
-	if(!m_sky.hasNormals()) {
-		m_sky.calculateVertexNormals();
-	}
-}
-
-
-void
-WaterRenderer::
 keyboard(int key, int x, int y)
 {
 	double scale = 0.01;
@@ -83,7 +51,8 @@ keyboard(int key, int x, int y)
 	{			
 		case 'r':
 			// reset camera position
-			m_camera.setIdentity(); 
+			m_camera.setIdentity();
+			set_scene_pos(Vector3(0.0, 0.0, 0.0), 5);
 			break;
 		default:
 			TrackballViewer::keyboard(key, x, y);
@@ -101,59 +70,134 @@ special(int key, int x, int y)
 	glutPostRedisplay();
 }
 
-//-----------------------------------------------------------------------------
-
-//Draws the whole scene
-void 
+Mesh3D* 
 WaterRenderer::
-draw_scene(DrawMode _draw_mode)
-{ 
-	// clear screen
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glDisable(GL_CULL_FACE);
-	glEnable(GL_MULTISAMPLE);
+createPlane()
+{
+    // initialize Mesh3D
+    Mesh3D *plane = new Mesh3D();
+    
+	std::vector< Vector3 > planeVertices;
+	std::vector< unsigned int > planeIndices;
+	std::vector< Vector3 > planeNormals;
+	
+	float d = 8;
+    
+	planeVertices.push_back(Vector3( d,-d,-d));
+	planeVertices.push_back(Vector3(-d,-d,-d));
+	planeVertices.push_back(Vector3(-d,-d, d));
+	planeVertices.push_back(Vector3( d,-d, d));
+	planeIndices.push_back(0);
+	planeIndices.push_back(1);
+	planeIndices.push_back(2);
+	planeIndices.push_back(0);
+	planeIndices.push_back(2);
+	planeIndices.push_back(3);
+	for(int k = 0; k < 4; k++) planeNormals.push_back(Vector3(0,-1,0));
 
-	glDisable(GL_DEPTH_TEST);
-	draw_sky();
+	plane->setIndices(planeIndices);
+	plane->setVertexPositions(planeVertices);
+	plane->setVertexNormals(planeNormals);
 
-	glEnable(GL_DEPTH_TEST);
-	draw_water();
+    return plane;
 }
 
-void
+
+Mesh3D* 
 WaterRenderer::
-draw_sky() {
+createCube()
+{
+    // initialize Mesh3D
+    Mesh3D *cube = new Mesh3D();
+    
+	// setup uniform cube with side length 12 and center of cube being (0,0,0)
+	std::vector< Vector3 > cubeVertices;
+	std::vector< unsigned int > cubeIndices;
+	float d = 8;
+    
 	
-	m_skyShader.bind(); 
+	// front
+	cubeVertices.push_back(Vector3(-d,-d, d));
+	cubeVertices.push_back(Vector3( d,-d, d));
+	cubeVertices.push_back(Vector3( d, d, d));
+	cubeVertices.push_back(Vector3(-d, d, d));
+	cubeIndices.push_back(0);
+	cubeIndices.push_back(1);
+	cubeIndices.push_back(2);
+	cubeIndices.push_back(0);
+	cubeIndices.push_back(2);
+	cubeIndices.push_back(3);
 	
-	// set parameters to send to the shader
-	m_skyShader.setMatrix4x4Uniform("worldcamera", m_camera.getTransformation().Inverse());
-	m_skyShader.setMatrix4x4Uniform("projection", m_camera.getProjectionMatrix());
-	m_skyShader.setMatrix4x4Uniform("modelworld", m_sky.getTransformation() );
 	
-	m_sky.getMaterial(0).m_diffuseTexture.bind();
-	m_skyShader.setIntUniform("texture", m_sky.getMaterial(0).m_diffuseTexture.getLayer());
-
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_NORMAL_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	// right
+	cubeVertices.push_back(Vector3( d,-d,-d));
+	cubeVertices.push_back(Vector3( d,-d, d));
+	cubeVertices.push_back(Vector3( d, d, d));
+	cubeVertices.push_back(Vector3( d, d,-d));
+	cubeIndices.push_back(4);
+	cubeIndices.push_back(5);
+	cubeIndices.push_back(6);
+	cubeIndices.push_back(4);
+	cubeIndices.push_back(6);
+	cubeIndices.push_back(7);
 	
-	glVertexPointer( 3, GL_DOUBLE, 0, m_sky.getVertexPointer() );
-	glNormalPointer( GL_DOUBLE, 0, m_sky.getNormalPointer() );
-	glTexCoordPointer( 2, GL_DOUBLE, 0, m_sky.getUvTextureCoordPointer() );
 	
-	for(unsigned int i = 0; i < m_sky.getNumberOfParts(); i++)
-	{
-		glDrawElements( GL_TRIANGLES, m_sky.getNumberOfFaces(i)*3, GL_UNSIGNED_INT, m_sky.getVertexIndicesPointer(i) );
-	}
+	// back
+	cubeVertices.push_back(Vector3( d,-d,-d));
+	cubeVertices.push_back(Vector3(-d,-d,-d));
+	cubeVertices.push_back(Vector3(-d, d,-d));
+	cubeVertices.push_back(Vector3( d, d,-d));
+	cubeIndices.push_back(8);
+	cubeIndices.push_back(9);
+	cubeIndices.push_back(10);
+	cubeIndices.push_back(8);
+	cubeIndices.push_back(10);
+	cubeIndices.push_back(11);
 	
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glDisableClientState(GL_NORMAL_ARRAY);
-	glDisableClientState(GL_VERTEX_ARRAY);
-
-	m_sky.getMaterial(0).m_diffuseTexture.unbind();
-
-	m_skyShader.unbind();
+    
+	// left
+	cubeVertices.push_back(Vector3(-d,-d, d));
+	cubeVertices.push_back(Vector3(-d,-d,-d));
+	cubeVertices.push_back(Vector3(-d, d,-d));
+	cubeVertices.push_back(Vector3(-d, d, d));
+	cubeIndices.push_back(12);
+	cubeIndices.push_back(13);
+	cubeIndices.push_back(14);
+	cubeIndices.push_back(12);
+	cubeIndices.push_back(14);
+	cubeIndices.push_back(15);
+	
+    
+	// top
+	cubeVertices.push_back(Vector3(-d, d,-d));
+	cubeVertices.push_back(Vector3( d, d,-d));
+	cubeVertices.push_back(Vector3( d, d, d));
+	cubeVertices.push_back(Vector3(-d, d, d));
+	cubeIndices.push_back(16);
+	cubeIndices.push_back(17);
+	cubeIndices.push_back(18);
+	cubeIndices.push_back(16);
+	cubeIndices.push_back(18);
+	cubeIndices.push_back(19);
+	
+    
+	// bottom
+	cubeVertices.push_back(Vector3( d,-d,-d));
+	cubeVertices.push_back(Vector3(-d,-d,-d));
+	cubeVertices.push_back(Vector3(-d,-d, d));
+	cubeVertices.push_back(Vector3( d,-d, d));
+	cubeIndices.push_back(20);
+	cubeIndices.push_back(21);
+	cubeIndices.push_back(22);
+	cubeIndices.push_back(20);
+	cubeIndices.push_back(22);
+	cubeIndices.push_back(23);
+	
+	
+	cube->setIndices(cubeIndices);
+	cube->setVertexPositions(cubeVertices);
+	
+    return cube;
 }
 
 void
@@ -189,17 +233,14 @@ generateCubeMap() {
 	
 	//Chargement en mémoire des textures
 	
-	
 	// On génère un ID de texture unique pour les 6 textures du CubeMap
-	
 	glGenTextures(1, &CubMapTextureID); 				    
 	glBindTexture(GL_TEXTURE_CUBE_MAP, CubMapTextureID);
 
 	int i=0;
-	for (i = 0; i < 6; i++)
-	{
+	for (i = 0; i < 6; i++) {
 		Bitmap * img = new Bitmap();
-		if (img -> loadBMP(CubeMapFileName[i])) {
+		if (img -> loadBMP(CubeMapFileName2[i])) {
 			glTexImage2D(CubeMapTarget[i], 0, GL_RGB, img->width, img->height, 0, GL_RGB, GL_UNSIGNED_BYTE, img->data);
 		} 
 	}
@@ -208,6 +249,54 @@ generateCubeMap() {
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP);
+}
+
+//-----------------------------------------------------------------------------
+
+//Draws the whole scene
+void 
+WaterRenderer::
+draw_scene(DrawMode _draw_mode)
+{ 
+	// clear screen
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glDisable(GL_CULL_FACE);
+	glEnable(GL_MULTISAMPLE);
+
+	glDisable(GL_DEPTH_TEST);
+	draw_skybox();
+
+	glEnable(GL_DEPTH_TEST);
+	draw_water();
+}
+
+void
+WaterRenderer::
+draw_skybox() {
+
+	m_skyShader.bind(); 
+	
+	// set parameters to send to the shader
+	m_skyShader.setMatrix4x4Uniform("worldcamera", m_camera.getTransformation().Inverse());
+	m_skyShader.setMatrix4x4Uniform("projection", m_camera.getProjectionMatrix());
+	
+	glBindTexture(GL_TEXTURE_CUBE_MAP, CubMapTextureID);
+	m_skyShader.setIntUniform("cubemap", 0);
+
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glVertexPointer( 3, GL_DOUBLE, 0, m_skybox.getVertexPointer() );
+
+	for(unsigned int i = 0; i < m_skybox.getNumberOfParts(); i++)
+	{
+		glDrawElements( GL_TRIANGLES, m_skybox.getNumberOfFaces(i)*3, GL_UNSIGNED_INT, m_skybox.getVertexIndicesPointer(i) );
+	}
+	
+	glDisableClientState(GL_VERTEX_ARRAY);
+
+	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+	
+	m_skyShader.unbind();
+
 }
 
 void::
@@ -222,41 +311,32 @@ draw_water() {
 
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_NORMAL_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	
 	m_waterShader.bind();
 
 	glVertexPointer( 3, GL_DOUBLE, 0, m_water.getVertexPointer() );
 	glNormalPointer( GL_DOUBLE, 0, m_water.getNormalPointer() );
-	glTexCoordPointer( 2, GL_DOUBLE, 0, m_water.getUvTextureCoordPointer() );
-	
+
 	//set the shader parameters
 	m_waterShader.setMatrix4x4Uniform("worldcamera", m_camera.getTransformation().Inverse());
 	m_waterShader.setMatrix4x4Uniform("projection", m_camera.getProjectionMatrix());
-	m_waterShader.setMatrix4x4Uniform("modelworld", m_water.getTransformation() );
-
+	
 	m_waterShader.setVector3Uniform("eyePos", m_camera.origin().x, m_camera.origin().y, m_camera.origin().z);
-	m_waterShader.setFloatUniform("fresnelBias", 1);
+	m_waterShader.setFloatUniform("fresnelBias", 0);
 	m_waterShader.setFloatUniform("fresnelScale", 1);
 	m_waterShader.setFloatUniform("fresnelPower", 1);
-	m_waterShader.setFloatUniform("etaRatio", 1);
+	m_waterShader.setFloatUniform("etaRatio", 1.5);
 
-	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, CubMapTextureID);
 	m_waterShader.setIntUniform("env", 0);
-
-	//Draw the water plane
 	
 	glDrawElements( GL_TRIANGLES, m_water.getNumberOfFaces()*3, GL_UNSIGNED_INT, m_water.getVertexIndicesPointer() );
 
-	
-	
 	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 	m_waterShader.unbind();
 
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glDisableClientState(GL_NORMAL_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
+	glDisableClientState(GL_NORMAL_ARRAY);
 	
 	glDisable(GL_TEXTURE_CUBE_MAP);
 	glDisable(GL_NORMALIZE);

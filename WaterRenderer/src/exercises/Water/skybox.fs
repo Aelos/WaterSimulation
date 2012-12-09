@@ -1,8 +1,9 @@
-uniform sampler2D texture;
+uniform samplerCube cubemap;
 
+varying vec3 texCoord;
 
 void main()
 {   
-    vec4 tempcolor = clamp(texture2D(texture, gl_TexCoord[0].xy),0,1);
+    vec4 tempcolor = textureCube(cubemap, texCoord);
     gl_FragColor = tempcolor;
 }

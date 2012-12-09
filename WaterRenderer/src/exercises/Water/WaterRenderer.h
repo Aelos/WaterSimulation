@@ -35,14 +35,14 @@ protected:
 	Light3D m_light;
 	Vector4 lightColor;
 	Mesh3D m_water;
-	Mesh3D m_sky;
+	Mesh3D m_skybox;
 	GLuint CubMapTextureID;
 	
-	void load_water();
-	void load_sky();
+	Mesh3D* createPlane();
+	Mesh3D* createCube();
 	void generateCubeMap();
 	void draw_scene(DrawMode _draw_mode);
-	void draw_sky();
+	void draw_skybox();
 	void draw_water();
 };
 
