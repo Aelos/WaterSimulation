@@ -25,11 +25,11 @@ init()
 	m_water = *createPlane();
 	m_skybox = *createCube();
 	
-	m_water.translateWorld( Vector3(0,-4,0) );
-	
 	// put a light in the sky
-	m_light.translateWorld( Vector3(0,0,0) );
-	lightColor = Vector4(1, 1, 1, 1.0);
+	//m_light.translateWorld( Vector3(0,0,0) );
+	//lightColor = Vector4(1, 1, 1, 1.0);
+
+	watch.start();
 
 	// set camera to look at world coordinate center
     set_scene_pos(Vector3(0.0, 0.0, 0.0), 2);
@@ -81,19 +81,19 @@ createPlane()
 	std::vector< unsigned int > planeIndices;
 	std::vector< Vector3 > planeNormals;
 	
-	float d = 8;
+	float d = 2;
     
-	planeVertices.push_back(Vector3( d,-d,-d));
-	planeVertices.push_back(Vector3(-d,-d,-d));
-	planeVertices.push_back(Vector3(-d,-d, d));
-	planeVertices.push_back(Vector3( d,-d, d));
+	planeVertices.push_back(Vector3( d, 0,-d));
+	planeVertices.push_back(Vector3(-d, 0,-d));
+	planeVertices.push_back(Vector3(-d, 0, d));
+	planeVertices.push_back(Vector3( d, 0, d));
 	planeIndices.push_back(0);
 	planeIndices.push_back(1);
 	planeIndices.push_back(2);
 	planeIndices.push_back(0);
 	planeIndices.push_back(2);
 	planeIndices.push_back(3);
-	for(int k = 0; k < 4; k++) planeNormals.push_back(Vector3(0,-1,0));
+	for(int k = 0; k < 4; k++) planeNormals.push_back(Vector3(0,1,0));
 
 	plane->setIndices(planeIndices);
 	plane->setVertexPositions(planeVertices);
@@ -110,7 +110,7 @@ createCube()
     // initialize Mesh3D
     Mesh3D *cube = new Mesh3D();
     
-	// setup uniform cube with side length 12 and center of cube being (0,0,0)
+	// setup uniform cube with side length 16 and center of cube being (0,0,0)
 	std::vector< Vector3 > cubeVertices;
 	std::vector< unsigned int > cubeIndices;
 	float d = 8;
@@ -253,6 +253,13 @@ generateCubeMap() {
 
 //-----------------------------------------------------------------------------
 
+void
+WaterRenderer::
+idle() {
+	glutPostRedisplay();
+}
+
+
 //Draws the whole scene
 void 
 WaterRenderer::
@@ -318,12 +325,33 @@ draw_water() {
 	glNormalPointer( GL_DOUBLE, 0, m_water.getNormalPointer() );
 
 	//set the shader parameters
+
+	m_waterShader.setFloatUniform("waterHeight", -4);
+    m_waterShader.setIntUniform("numWaves", 1);
+
+	
+
+	int i = 1;
+	float amplitude = 0.5f / (i + 1);
+	float wavelength = 8 * M_PI / (i + 1);
+	float speed = 1.0f + 2*i;
+	Vector2 direction = (1, 1);
+
+	m_waterShader.setFloatUniform("amplitude", amplitude);
+	m_waterShader.setFloatUniform("wavelength", wavelength);
+	m_waterShader.setFloatUniform("speed", speed);
+	m_waterShader.setVector2Uniform("direction", direction.x, direction.y);
+
 	m_waterShader.setMatrix4x4Uniform("worldcamera", m_camera.getTransformation().Inverse());
 	m_waterShader.setMatrix4x4Uniform("projection", m_camera.getProjectionMatrix());
+	m_waterShader.setMatrix3x3Uniform("worldcameraNormal", m_camera.getTransformation().Transpose());
+
+	m_waterShader.setMatrix4x4Uniform("modelworld", m_water.getTransformation() );
+	m_waterShader.setMatrix3x3Uniform("modelworldNormal", m_water.getTransformation().Inverse().Transpose());
 	
 	m_waterShader.setVector3Uniform("eyePos", m_camera.origin().x, m_camera.origin().y, m_camera.origin().z);
 	m_waterShader.setFloatUniform("fresnelBias", 0);
-	m_waterShader.setFloatUniform("fresnelScale", 1);
+	m_waterShader.setFloatUniform("fresnelScale", 2);
 	m_waterShader.setFloatUniform("fresnelPower", 1);
 	m_waterShader.setFloatUniform("etaRatio", 1.5);
 

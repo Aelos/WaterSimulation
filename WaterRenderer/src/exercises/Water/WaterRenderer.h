@@ -11,6 +11,8 @@
 #include "../../gl/fbo.h"
 #include "../../utils/Mesh3DReader.h"
 #include "../../utils/Bitmap.h"
+#include "../../utils/StopWatch.h"
+
 
 class WaterRenderer : public TrackballViewer
 {
@@ -37,10 +39,13 @@ protected:
 	Mesh3D m_water;
 	Mesh3D m_skybox;
 	GLuint CubMapTextureID;
+	StopWatch watch;
 	
+	float currentTime;
 	Mesh3D* createPlane();
 	Mesh3D* createCube();
 	void generateCubeMap();
+	void idle();
 	void draw_scene(DrawMode _draw_mode);
 	void draw_skybox();
 	void draw_water();
