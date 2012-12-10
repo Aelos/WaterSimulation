@@ -52,7 +52,19 @@ keyboard(int key, int x, int y)
 		case 'r':
 			// reset camera position
 			m_camera.setIdentity();
-			set_scene_pos(Vector3(0.0, 0.0, 0.0), 5);
+			set_scene_pos(Vector3(0.0, 0.0, 0.0), 2);
+			break;
+
+		case 't':
+			// reset camera position
+			m_camera.setIdentity();
+			set_scene_pos(Vector3(0.0, 0.0, 0.0), 4);
+			break;
+
+		case 'z':
+			// reset camera position
+			m_camera.setIdentity();
+			set_scene_pos(Vector3(0.0, 0.0, 0.0), 8);
 			break;
 		default:
 			TrackballViewer::keyboard(key, x, y);
@@ -81,19 +93,21 @@ createPlane()
 	std::vector< unsigned int > planeIndices;
 	std::vector< Vector3 > planeNormals;
 	
-	float d = 2;
+	float d = 1;
     
 	planeVertices.push_back(Vector3( d, 0,-d));
 	planeVertices.push_back(Vector3(-d, 0,-d));
 	planeVertices.push_back(Vector3(-d, 0, d));
 	planeVertices.push_back(Vector3( d, 0, d));
+
 	planeIndices.push_back(0);
 	planeIndices.push_back(1);
 	planeIndices.push_back(2);
 	planeIndices.push_back(0);
 	planeIndices.push_back(2);
 	planeIndices.push_back(3);
-	for(int k = 0; k < 4; k++) planeNormals.push_back(Vector3(0,1,0));
+
+	for(int k = 0; k < 12; k++) planeNormals.push_back(Vector3(0,1,0));
 
 	plane->setIndices(planeIndices);
 	plane->setVertexPositions(planeVertices);
@@ -329,7 +343,9 @@ draw_water() {
 	m_waterShader.setFloatUniform("waterHeight", -4);
     m_waterShader.setIntUniform("numWaves", 1);
 
-	
+	float previousTime = currentTime;
+	float currentTime = watch.stop();
+	m_waterShader.setFloatUniform("time", currentTime);
 
 	int i = 1;
 	float amplitude = 0.5f / (i + 1);
@@ -341,6 +357,7 @@ draw_water() {
 	m_waterShader.setFloatUniform("wavelength", wavelength);
 	m_waterShader.setFloatUniform("speed", speed);
 	m_waterShader.setVector2Uniform("direction", direction.x, direction.y);
+
 
 	m_waterShader.setMatrix4x4Uniform("worldcamera", m_camera.getTransformation().Inverse());
 	m_waterShader.setMatrix4x4Uniform("projection", m_camera.getProjectionMatrix());
