@@ -12,7 +12,7 @@ int main(int argc, char **argv)
 {
 	glutInit(&argc, argv);
 	
-	WaterRenderer window("Water Viewer", 800, 800);
+	WaterRenderer window("Water Viewer", 1366, 768);
 	
 	glutMainLoop();
 }

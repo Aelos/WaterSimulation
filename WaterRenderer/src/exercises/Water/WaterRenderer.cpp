@@ -30,6 +30,7 @@ init()
 	//lightColor = Vector4(1, 1, 1, 1.0);
 
 	watch.start();
+	currentTime = watch.stop();
 
 	// set camera to look at world coordinate center
     set_scene_pos(Vector3(0.0, 0.0, 0.0), 2);
@@ -92,22 +93,33 @@ createPlane()
 	std::vector< Vector3 > planeVertices;
 	std::vector< unsigned int > planeIndices;
 	std::vector< Vector3 > planeNormals;
-	
-	float d = 1;
+
+	float d = 10;
+	int n=300;
     
-	planeVertices.push_back(Vector3( d, 0,-d));
-	planeVertices.push_back(Vector3(-d, 0,-d));
-	planeVertices.push_back(Vector3(-d, 0, d));
-	planeVertices.push_back(Vector3( d, 0, d));
+    float a=2*d/(n-1);
+    float b=2*d/(n-1);
+	for(int i=0;i<n;i++){
+		for(int j=0;j<n;j++){
+			planeVertices.push_back(Vector3(-(d)+i*b, 0,-(d)+j*a));
+		}
+	}
+	
+	for(int i=0;i<n-1;i++){
+		for(int j=0;j<n-1;j++){
+			
+			planeIndices.push_back(n*i+j+1);
+			planeIndices.push_back(n*i+j);
+			planeIndices.push_back(n*(i+1)+j);
+			planeIndices.push_back(n*i+j+1);
+			planeIndices.push_back(n*(i+1)+j);
+			planeIndices.push_back(n*(i+1)+j+1);
 
-	planeIndices.push_back(0);
-	planeIndices.push_back(1);
-	planeIndices.push_back(2);
-	planeIndices.push_back(0);
-	planeIndices.push_back(2);
-	planeIndices.push_back(3);
+			
+		}
+	}
 
-	for(int k = 0; k < 12; k++) planeNormals.push_back(Vector3(0,1,0));
+	for(int k = 0; k < n*n; k++) planeNormals.push_back(Vector3(0,1,0));
 
 	plane->setIndices(planeIndices);
 	plane->setVertexPositions(planeVertices);
@@ -341,22 +353,30 @@ draw_water() {
 	//set the shader parameters
 
 	m_waterShader.setFloatUniform("waterHeight", -4);
-    m_waterShader.setIntUniform("numWaves", 1);
+    m_waterShader.setIntUniform("numWaves", 2);
 
-	float previousTime = currentTime;
-	float currentTime = watch.stop();
+	currentTime+=2*M_PI/250;
 	m_waterShader.setFloatUniform("time", currentTime);
 
-	int i = 1;
-	float amplitude = 0.5f / (i + 1);
-	float wavelength = 8 * M_PI / (i + 1);
-	float speed = 1.0f + 2*i;
-	Vector2 direction = (1, 1);
+	float amplitude1 = 0.2;
+	float wavelength1 = 0.4 * M_PI;
+	float speed1 = 1.0f;
+	Vector2 direction1 = (1, 1);
 
-	m_waterShader.setFloatUniform("amplitude", amplitude);
-	m_waterShader.setFloatUniform("wavelength", wavelength);
-	m_waterShader.setFloatUniform("speed", speed);
-	m_waterShader.setVector2Uniform("direction", direction.x, direction.y);
+	float amplitude2 = 0.4;
+	float wavelength2 = 1.5 * M_PI;
+	float speed2 = 1.5f;
+	Vector2 direction2 = (0, 1);
+
+	m_waterShader.setFloatUniform("amplitude1", amplitude1);
+	m_waterShader.setFloatUniform("wavelength1", wavelength1);
+	m_waterShader.setFloatUniform("speed1", speed1);
+	m_waterShader.setVector2Uniform("direction1", direction1.x, direction1.y);
+
+	m_waterShader.setFloatUniform("amplitude2", amplitude2);
+	m_waterShader.setFloatUniform("wavelength2", wavelength2);
+	m_waterShader.setFloatUniform("speed2", speed2);
+	m_waterShader.setVector2Uniform("direction2", direction2.x, direction2.y);
 
 
 	m_waterShader.setMatrix4x4Uniform("worldcamera", m_camera.getTransformation().Inverse());
@@ -370,7 +390,7 @@ draw_water() {
 	m_waterShader.setFloatUniform("fresnelBias", 0);
 	m_waterShader.setFloatUniform("fresnelScale", 2);
 	m_waterShader.setFloatUniform("fresnelPower", 1);
-	m_waterShader.setFloatUniform("etaRatio", 1.5);
+	m_waterShader.setFloatUniform("etaRatio", 0.66);
 
 	glBindTexture(GL_TEXTURE_CUBE_MAP, CubMapTextureID);
 	m_waterShader.setIntUniform("env", 0);
