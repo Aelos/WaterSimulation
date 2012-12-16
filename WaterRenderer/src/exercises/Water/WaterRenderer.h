@@ -34,14 +34,14 @@ protected:
 	
 	Shader m_skyShader;
 	Shader m_waterShader;
-	Light3D m_light;
-	Vector4 lightColor;
 	Mesh3D m_water;
 	Mesh3D m_skybox;
 	GLuint CubMapTextureID;
 	StopWatch watch;
-	
+	float startingTime;
 	float currentTime;
+	int sceneSize;
+
 	Mesh3D* createPlane();
 	Mesh3D* createCube();
 	void generateCubeMap();

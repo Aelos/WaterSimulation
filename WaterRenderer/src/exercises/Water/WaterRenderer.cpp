@@ -25,15 +25,12 @@ init()
 	m_water = *createPlane();
 	m_skybox = *createCube();
 	
-	// put a light in the sky
-	//m_light.translateWorld( Vector3(0,0,0) );
-	//lightColor = Vector4(1, 1, 1, 1.0);
-
 	watch.start();
-	currentTime = watch.stop();
+	startingTime = watch.stop();
 
 	// set camera to look at world coordinate center
-    set_scene_pos(Vector3(0.0, 0.0, 0.0), 2);
+    sceneSize = 4;
+	set_scene_pos(Vector3(0.0, 0.0, 0.0), sceneSize);
 	
 	generateCubeMap();
 	
@@ -50,23 +47,26 @@ keyboard(int key, int x, int y)
 	
 	switch (key)
 	{			
-		case 'r':
+		case '-':
 			// reset camera position
-			m_camera.setIdentity();
-			set_scene_pos(Vector3(0.0, 0.0, 0.0), 2);
+			if(sceneSize>1) {
+				sceneSize*=0.5;
+				m_skybox.scaleObject(Vector3 (0.5,0.5,0.5));
+				m_water.scaleObject(Vector3 (0.5,0.5,0.5));
+				m_camera.setIdentity();
+				set_scene_pos(Vector3(0.0, 0.0, 0.0), sceneSize);
+			}
 			break;
 
-		case 't':
+		case '+':
+			sceneSize*=2;
+			m_skybox.scaleObject(Vector3 (2.0,2.0,2.0));
+			m_water.scaleObject(Vector3 (2.0,2.0,2.0));
 			// reset camera position
 			m_camera.setIdentity();
-			set_scene_pos(Vector3(0.0, 0.0, 0.0), 4);
+			set_scene_pos(Vector3(0.0, 0.0, 0.0), sceneSize);
 			break;
 
-		case 'z':
-			// reset camera position
-			m_camera.setIdentity();
-			set_scene_pos(Vector3(0.0, 0.0, 0.0), 8);
-			break;
 		default:
 			TrackballViewer::keyboard(key, x, y);
 			break;
@@ -94,7 +94,7 @@ createPlane()
 	std::vector< unsigned int > planeIndices;
 	std::vector< Vector3 > planeNormals;
 
-	float d = 10;
+	float d = 50;
 	int n=300;
     
     float a=2*d/(n-1);
@@ -136,10 +136,10 @@ createCube()
     // initialize Mesh3D
     Mesh3D *cube = new Mesh3D();
     
-	// setup uniform cube with side length 16 and center of cube being (0,0,0)
+	// setup uniform cube with side length 32 and center of cube being (0,0,0)
 	std::vector< Vector3 > cubeVertices;
 	std::vector< unsigned int > cubeIndices;
-	float d = 8;
+	float d = 16;
     
 	
 	// front
@@ -310,6 +310,7 @@ draw_skybox() {
 	m_skyShader.bind(); 
 	
 	// set parameters to send to the shader
+	m_skyShader.setMatrix4x4Uniform("modelworld", m_skybox.getTransformation());
 	m_skyShader.setMatrix4x4Uniform("worldcamera", m_camera.getTransformation().Inverse());
 	m_skyShader.setMatrix4x4Uniform("projection", m_camera.getProjectionMatrix());
 	
@@ -343,30 +344,32 @@ draw_water() {
 	glEnable(GL_NORMALIZE);
 
 	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_NORMAL_ARRAY);
 	
 	m_waterShader.bind();
 
 	glVertexPointer( 3, GL_DOUBLE, 0, m_water.getVertexPointer() );
-	glNormalPointer( GL_DOUBLE, 0, m_water.getNormalPointer() );
-
+	
 	//set the shader parameters
 
-	m_waterShader.setFloatUniform("waterHeight", -4);
-    m_waterShader.setIntUniform("numWaves", 2);
+	m_waterShader.setFloatUniform("waterHeight", -2*sceneSize);
+    
+	currentTime = watch.stop();
+	m_waterShader.setFloatUniform("time", (currentTime - startingTime)/1000 );
 
-	currentTime+=2*M_PI/250;
-	m_waterShader.setFloatUniform("time", currentTime);
-
-	float amplitude1 = 0.2;
-	float wavelength1 = 0.4 * M_PI;
-	float speed1 = 1.0f;
+	float amplitude1 = 0.03;
+	float wavelength1 = 0.5 * M_PI;
+	float speed1 = 3.0f;
 	Vector2 direction1 = (1, 1);
 
-	float amplitude2 = 0.4;
-	float wavelength2 = 1.5 * M_PI;
-	float speed2 = 1.5f;
-	Vector2 direction2 = (0, 1);
+	float amplitude2 = 0.6;
+	float wavelength2 = 4.0 * M_PI;
+	float speed2 = 3.0f;
+	Vector2 direction2 = (1, 1);
+
+	float amplitude3 = 0.3;
+	float wavelength3 = 10.0 * M_PI;
+	float speed3 = 3.0f;
+	Vector2 direction3 = (1, 1);
 
 	m_waterShader.setFloatUniform("amplitude1", amplitude1);
 	m_waterShader.setFloatUniform("wavelength1", wavelength1);
@@ -377,14 +380,16 @@ draw_water() {
 	m_waterShader.setFloatUniform("wavelength2", wavelength2);
 	m_waterShader.setFloatUniform("speed2", speed2);
 	m_waterShader.setVector2Uniform("direction2", direction2.x, direction2.y);
-
+	
+	m_waterShader.setFloatUniform("amplitude3", amplitude3);
+	m_waterShader.setFloatUniform("wavelength3", wavelength3);
+	m_waterShader.setFloatUniform("speed3", speed3);
+	m_waterShader.setVector2Uniform("direction3", direction3.x, direction3.y);
 
 	m_waterShader.setMatrix4x4Uniform("worldcamera", m_camera.getTransformation().Inverse());
 	m_waterShader.setMatrix4x4Uniform("projection", m_camera.getProjectionMatrix());
-	m_waterShader.setMatrix3x3Uniform("worldcameraNormal", m_camera.getTransformation().Transpose());
-
+	
 	m_waterShader.setMatrix4x4Uniform("modelworld", m_water.getTransformation() );
-	m_waterShader.setMatrix3x3Uniform("modelworldNormal", m_water.getTransformation().Inverse().Transpose());
 	
 	m_waterShader.setVector3Uniform("eyePos", m_camera.origin().x, m_camera.origin().y, m_camera.origin().z);
 	m_waterShader.setFloatUniform("fresnelBias", 0);
@@ -401,7 +406,6 @@ draw_water() {
 	m_waterShader.unbind();
 
 	glDisableClientState(GL_VERTEX_ARRAY);
-	glDisableClientState(GL_NORMAL_ARRAY);
 	
 	glDisable(GL_TEXTURE_CUBE_MAP);
 	glDisable(GL_NORMALIZE);
