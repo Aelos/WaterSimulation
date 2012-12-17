@@ -1,5 +1,6 @@
 // Cube map
 uniform samplerCube env;
+uniform vec4 waterColor;
 
 // Reflected and refracted vectors
 varying vec3 reflectedVector, refractedVector;
@@ -13,5 +14,5 @@ void main()
     vec4 reflectedColor = textureCube(env, reflectedVector);
     vec4 refractedColor = textureCube(env, refractedVector);
     // Mix reflected and refracted colors
-    gl_FragColor = mix(refractedColor, reflectedColor, refFactor) * vec4(0.3,0.5,0.8,0.5);
+    gl_FragColor = mix(refractedColor, reflectedColor, refFactor) * waterColor;
 }

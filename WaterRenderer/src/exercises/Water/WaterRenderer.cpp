@@ -25,6 +25,8 @@ init()
 	m_water = *createPlane();
 	m_skybox = *createCube();
 	
+	waterColor = Vector4(0.1,0.2,0.3,0.5);
+
 	watch.start();
 	startingTime = watch.stop();
 
@@ -32,6 +34,28 @@ init()
     sceneSize = 4;
 	set_scene_pos(Vector3(0.0, 0.0, 0.0), sceneSize);
 	
+	amplitude1 = 0.01f;
+	wavelength1 = 2.0f;
+	speed1 = 1.0f;
+	direction1 = Vector2(1, -1);
+
+	amplitude2 = 1.0f;
+	wavelength2 = 8.0f;
+	speed2 = 2.0f;
+	direction2 = Vector2(1, 0);
+
+	amplitude3 = 0.5f;
+	wavelength3 = 15.0f;
+	speed3 = 1.0f;
+	direction3 = Vector2(0, 1);
+	
+	amplitude4 = 15;
+	wavelength4 = 30;
+	speed4 = 3.0;
+	direction4 = Vector2(1,0);
+
+	time4 = -1000;
+
 	generateCubeMap();
 	
 	// load shaders
@@ -66,7 +90,108 @@ keyboard(int key, int x, int y)
 			m_camera.setIdentity();
 			set_scene_pos(Vector3(0.0, 0.0, 0.0), sceneSize);
 			break;
-
+		
+		case 'q':
+			amplitude1+=0.02;
+			break;
+		case 'a':
+			wavelength1++;
+			break;
+		case 'y':
+			speed1++;
+			break;
+		case 'w':
+			if(amplitude1>0.02) {
+				amplitude1-=0.02;
+			}
+			break;
+		case 's':
+			if(wavelength1>1) {
+				wavelength1--;
+			}
+			break;
+		case 'x':
+			if(speed1>1) {
+				speed1--;
+			}
+			break;
+		case 'e':
+			amplitude2++;
+			break;
+		case 'd':
+			wavelength2++;
+			break;
+		case 'c':
+			speed2++;
+			break;
+		case 'r':
+			if(amplitude2>1) {
+				amplitude2--;
+			}
+			break;
+		case 'f':
+			if(wavelength2>1) {
+				wavelength2--;
+			}
+			break;
+		case 'v':
+			if(speed2>1) {
+				speed2--;
+			}
+			break;
+		case 't':
+			amplitude3++;
+			break;
+		case 'g':
+			wavelength3++;
+			break;
+		case 'b':
+			speed3++;
+			break;
+		case 'z':
+			if(amplitude3>1) {
+				amplitude3--;
+			}
+			break;
+		case 'h':
+			if(wavelength3>1) {
+				wavelength3--;
+			}
+			break;
+		case 'n':
+			if(speed3>1) {
+				speed3--;
+			}
+			break;
+		case 'u':
+			amplitude4++;
+			break;
+		case 'j':
+			wavelength4++;
+			break;
+		case 'm':
+			speed4++;
+			break;
+		case 'i':
+			if(amplitude4>1) {
+				amplitude4--;
+			}
+			break;
+		case 'k':
+			if(wavelength4>1) {
+				wavelength4--;
+			}
+			break;
+		case ',':
+			if(speed4>1) {
+				speed4--;
+			}
+			break;
+		case 'p':
+			amplitude2=0;
+			amplitude3=0;
+			time4= (watch.stop() - startingTime)/1000;
+			break;
 		default:
 			TrackballViewer::keyboard(key, x, y);
 			break;
@@ -356,21 +481,6 @@ draw_water() {
 	currentTime = watch.stop();
 	m_waterShader.setFloatUniform("time", (currentTime - startingTime)/1000 );
 
-	float amplitude1 = 0.03;
-	float wavelength1 = 0.5 * M_PI;
-	float speed1 = 3.0f;
-	Vector2 direction1 = (1, 1);
-
-	float amplitude2 = 0.6;
-	float wavelength2 = 4.0 * M_PI;
-	float speed2 = 3.0f;
-	Vector2 direction2 = (1, 1);
-
-	float amplitude3 = 0.3;
-	float wavelength3 = 10.0 * M_PI;
-	float speed3 = 3.0f;
-	Vector2 direction3 = (1, 1);
-
 	m_waterShader.setFloatUniform("amplitude1", amplitude1);
 	m_waterShader.setFloatUniform("wavelength1", wavelength1);
 	m_waterShader.setFloatUniform("speed1", speed1);
@@ -386,12 +496,19 @@ draw_water() {
 	m_waterShader.setFloatUniform("speed3", speed3);
 	m_waterShader.setVector2Uniform("direction3", direction3.x, direction3.y);
 
+	m_waterShader.setFloatUniform("amplitude4", amplitude4);
+	m_waterShader.setFloatUniform("wavelength4", wavelength4);
+	m_waterShader.setFloatUniform("speed4", speed4);
+	m_waterShader.setVector2Uniform("direction4", direction4.x, direction4.y);
+	m_waterShader.setIntUniform("time4", time4);
+
 	m_waterShader.setMatrix4x4Uniform("worldcamera", m_camera.getTransformation().Inverse());
 	m_waterShader.setMatrix4x4Uniform("projection", m_camera.getProjectionMatrix());
 	
 	m_waterShader.setMatrix4x4Uniform("modelworld", m_water.getTransformation() );
 	
 	m_waterShader.setVector3Uniform("eyePos", m_camera.origin().x, m_camera.origin().y, m_camera.origin().z);
+	m_waterShader.setVector4Uniform("waterColor", waterColor[0], waterColor[1], waterColor[2], waterColor[3]);
 	m_waterShader.setFloatUniform("fresnelBias", 0);
 	m_waterShader.setFloatUniform("fresnelScale", 2);
 	m_waterShader.setFloatUniform("fresnelPower", 1);

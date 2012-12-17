@@ -35,12 +35,35 @@ protected:
 	Shader m_skyShader;
 	Shader m_waterShader;
 	Mesh3D m_water;
+	Vector4 waterColor;
 	Mesh3D m_skybox;
 	GLuint CubMapTextureID;
 	StopWatch watch;
 	float startingTime;
 	float currentTime;
 	int sceneSize;
+
+	float amplitude1;
+	float wavelength1;
+	float speed1;
+	Vector2 direction1;
+
+	float amplitude2;
+	float wavelength2;
+	float speed2;
+	Vector2 direction2;
+
+	float amplitude3;
+	float wavelength3;
+	float speed3;
+	Vector2 direction3;
+
+	float amplitude4;
+	float wavelength4;
+	float speed4;
+	Vector2 direction4;
+
+	int time4;
 
 	Mesh3D* createPlane();
 	Mesh3D* createCube();
