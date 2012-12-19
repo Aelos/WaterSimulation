@@ -52,7 +52,7 @@ float wave(float x, float y,float wavelength,float speed,float amplitude, vec2 d
 	float frequency = 2*pi/wavelength;
     float phase = speed * frequency;
     float theta = dot(direction, vec2(x, y));
-    return amplitude1 * sin(theta * frequency + time * phase);
+    return amplitude * sin(theta * frequency + time * phase);
 }
 
 
