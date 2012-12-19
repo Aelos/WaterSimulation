@@ -2,7 +2,7 @@ const float pi = 3.14159;
 uniform float waterHeight;
 uniform float time;
 uniform int numWaves;
-
+uniform int isRadial;
 uniform float amplitude1;
 uniform float wavelength1;
 uniform float speed1;
@@ -49,23 +49,31 @@ varying float refFactor;
 ///////////////////////////////
 
 float wave(float x, float y,float wavelength,float speed,float amplitude, vec2 direction) {
+	if (isRadial == 1) {
+		direction = normalize(vec2(x,y));
+	}
 	float frequency = 2*pi/wavelength;
     float phase = speed * frequency;
     float theta = dot(direction, vec2(x, y));
-    return amplitude * sin(theta * frequency + time * phase);
+	float steepness = 1 / (amplitude * frequency);
+    return steepness * amplitude * sin(theta * frequency + time * phase);
 }
 
 
 float wave4(float x, float y){
-
-	vec2 wavepos = direction4*(time4-time)*speed4;
-	if( x < wavepos.x - wavelength4/4 * normalize(direction4).x || x > wavepos.x + wavelength4/4 * normalize(direction4).x) {
+	vec2 direction = direction4;
+		if (isRadial == 1) {
+		direction = normalize(vec2(x,y));
+	}
+	vec2 wavepos = direction*(time4-time)*speed4;
+	if( x < wavepos.x - wavelength4/4 * normalize(direction).x || x > wavepos.x + wavelength4/4 * normalize(direction).x) {
 		return 0;
 	} else {
 		float frequency = 2*pi/wavelength4;
 		float phase = speed4 * frequency;
-		float theta = dot(direction4, vec2(x, y));
-    	return amplitude4 * cos(theta*frequency + (time-time4) * phase);
+		float theta = dot(direction, vec2(x, y));
+		float steepness = 1 / (amplitude4 * frequency);
+    	return steepness * amplitude4 * cos(theta*frequency + (time-time4) * phase);
 	}
 }
 
@@ -76,25 +84,37 @@ float waveHeight(float x, float y) {
 }
 
 float dWavedx(float x, float y,float wavelength,float speed,float amplitude, vec2 direction) {
+	if (isRadial == 1) {
+		direction = normalize(vec2(x,y));
+	}
     float frequency = 2*pi/wavelength;
     float phase = speed * frequency;
     float theta = dot(direction, vec2(x, y));
     float A = amplitude * direction.x * frequency;
-    return A * cos(theta * frequency + time * phase);
+	float steepness = 1 / (amplitude * frequency);
+    return steepness * A * cos(theta * frequency + time * phase);
 }
 
 float dWavedy(float x, float y,float wavelength,float speed,float amplitude, vec2 direction) {
+	if (isRadial == 1) {
+		direction = normalize(vec2(x,y));
+	}
     float frequency = 2*pi/wavelength;
     float phase = speed * frequency;
     float theta = dot(direction, vec2(x, y));
     float A = amplitude * direction.y * frequency;
-    return A * cos(theta * frequency + time * phase);
+	float steepness = 1 / (amplitude * frequency);
+    return steepness * A * cos(theta * frequency + time * phase);
 }
 
 
 
 float dWavedx4(float x, float y) {
-    vec2 wavepos = direction4*(time4-time)*speed4;
+	vec2 direction = direction4;
+	if (isRadial == 1) {
+		direction = normalize(vec2(x,y));
+	}
+    vec2 wavepos = direction*(time4-time)*speed4;
 	if( x < wavepos.x - wavelength4/4) {
 		return 0;
 	} else if (x > wavelength4/4 + wavepos.x) {
@@ -102,14 +122,19 @@ float dWavedx4(float x, float y) {
 	} else {
 		float frequency = 2*pi/wavelength4;
 		float phase = speed4 * frequency;
-		float theta = dot(direction4, vec2(x, y));
-		float A = amplitude4 * direction4.x * frequency;
-		return -A * sin(theta * frequency + (time-time4) * phase);
+		float theta = dot(direction, vec2(x, y));
+		float A = amplitude4 * direction.x * frequency;
+		float steepness = 1 / (amplitude4 * frequency);
+		return -A * steepness * sin(theta * frequency + (time-time4) * phase);
 	}
 }
 
 float dWavedy4(float x, float y) {
-    vec2 wavepos = direction4*(time4-time)*speed4;
+	vec2 direction = direction4;
+	if (isRadial == 1) {
+		direction = normalize(vec2(x,y));
+	}
+    vec2 wavepos = direction*(time4-time)*speed4;
 	if( x < wavepos.x - wavelength4/4) {
 		return 0;
 	} else if (x > wavepos.x + wavelength4/4) {
@@ -117,9 +142,10 @@ float dWavedy4(float x, float y) {
 	} else {
 		float frequency = 2*pi/wavelength4;
 		float phase = speed4 * frequency;
-		float theta = dot(direction4, vec2(x, y));;
-		float A = amplitude4 * direction4.y * frequency;
-		return -A * sin(theta * frequency + (time-time4) * phase);
+		float theta = dot(direction4, vec2(x, y));
+		float steepness = 1 / (amplitude4 * frequency);
+		float A = amplitude4 * direction.y * frequency;
+		return -A * steepness * sin(theta * frequency + (time-time4) * phase);
 	}
 }
 

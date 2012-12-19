@@ -64,7 +64,7 @@ protected:
 	Vector2 direction4;
 
 	int time4;
-
+	bool isRadial;
 	Mesh3D* createPlane();
 	Mesh3D* createCube();
 	void generateCubeMap();

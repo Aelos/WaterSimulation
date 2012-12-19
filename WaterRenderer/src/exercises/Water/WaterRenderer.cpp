@@ -33,7 +33,7 @@ init()
 	// set camera to look at world coordinate center
     sceneSize = 4;
 	set_scene_pos(Vector3(0.0, 0.0, 0.0), sceneSize);
-	
+	isRadial = false;
 	amplitude1 = 0.01f;
 	wavelength1 = 2.0f;
 	speed1 = 1.0f;
@@ -191,6 +191,9 @@ keyboard(int key, int x, int y)
 			amplitude2=0;
 			amplitude3=0;
 			time4= (watch.stop() - startingTime)/1000;
+			break;
+		case '0':
+			isRadial = true;
 			break;
 		default:
 			TrackballViewer::keyboard(key, x, y);
@@ -480,7 +483,7 @@ draw_water() {
     
 	currentTime = watch.stop();
 	m_waterShader.setFloatUniform("time", (currentTime - startingTime)/1000 );
-
+	m_waterShader.setIntUniform("isRadial",isRadial ? 1 : 0);
 	m_waterShader.setFloatUniform("amplitude1", amplitude1);
 	m_waterShader.setFloatUniform("wavelength1", wavelength1);
 	m_waterShader.setFloatUniform("speed1", speed1);
